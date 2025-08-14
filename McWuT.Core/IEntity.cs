@@ -1,4 +1,4 @@
-﻿namespace McWuT.Core.Models
+﻿namespace McWuT.Core
 {
     public interface IEntity
     {
@@ -6,6 +6,6 @@
         DateTime CreatedDate { get; set; }
         DateTime? UpdatedDate { get; set; }
         DateTime? DeletedDate { get; set; }
-        Guid Guid { get; set; }
+        Guid UniqueId { get; set; }
     }
 }
