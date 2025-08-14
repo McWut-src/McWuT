@@ -5,7 +5,11 @@
     ViewData["Title"] = "Locked out";
 }
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">This account has been locked out, please try again later.</p>
-</header>
+<div class="container py-5 d-flex justify-content-center align-items-center min-vh-100 bg-light">
+    <div class="card shadow-lg w-100" style="max-width: 400px;">
+        <div class="card-body p-4 text-center">
+            <h2 class="card-title text-danger mb-4">@ViewData["Title"]</h2>
+            <p class="text-danger">This account has been locked out, please try again later.</p>
+        </div>
+    </div>
+</div>
