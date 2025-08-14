@@ -18,6 +18,7 @@ namespace McWuT.Web
                  options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped(typeof(EntityService<>));
+            builder.Services.AddScoped<INotesService, NotesService>();
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                             .AddRoles<IdentityRole>()

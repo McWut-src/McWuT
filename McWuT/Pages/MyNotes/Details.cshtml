@@ -1,0 +1,29 @@
+@page "{id:int}"
+@model McWuT.Web.Pages.MyNotes.DetailsModel
+@attribute [Authorize]
+@{
+    ViewData["Title"] = "Note Details";
+}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h2 class="card-title mb-0">@Model.Note.Title</h2>
+                        <div class="text-muted small text-end">
+                            <div>Created: @Model.Note.CreatedDate.ToLocalTime().ToString("g")</div>
+                            <div>Updated: @(Model.Note.UpdatedDate.HasValue ? Model.Note.UpdatedDate.Value.ToLocalTime().ToString("g") : "-")</div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="mb-3" style="white-space: pre-wrap;">@Model.Note.Content</div>
+                    <div class="d-flex gap-2">
+                        <a asp-page="Edit" asp-route-id="@Model.Note.Id" class="btn btn-primary">Edit</a>
+                        <a asp-page="Index" class="btn btn-outline-secondary">Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

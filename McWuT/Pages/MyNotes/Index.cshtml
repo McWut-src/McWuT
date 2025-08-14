@@ -1,0 +1,63 @@
+@page
+@model McWuT.Web.Pages.MyNotes.IndexModel
+@attribute [Authorize]
+@{
+    ViewData["Title"] = "My Notes";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">@ViewData["Title"]</h2>
+        <a asp-page="Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Note</a>
+    </div>
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-sm-6 col-md-4">
+            <input class="form-control" type="text" name="q" value="@Model.Query" placeholder="Search by title or content..." />
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+            <a asp-page="Index" class="btn btn-link">Reset</a>
+        </div>
+    </form>
+
+    @if (Model.Notes?.Count == 0)
+    {
+        <div class="alert alert-info">No notes yet. Create your first note.</div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:40%">Title</th>
+                            <th>Created</th>
+                            <th>Updated</th>
+                            <th class="text-end" style="width:220px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var note in Model.Notes!)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@note.Title</div>
+                                <div class="text-muted small text-truncate" style="max-width: 500px;">@note.Content</div>
+                            </td>
+                            <td>@note.CreatedDate.ToLocalTime().ToString("g")</td>
+                            <td>@(note.UpdatedDate.HasValue ? note.UpdatedDate.Value.ToLocalTime().ToString("g") : "-")</td>
+                            <td class="text-end">
+                                <a asp-page="Details" asp-route-id="@note.Id" class="btn btn-sm btn-outline-secondary">Details</a>
+                                <a asp-page="Edit" asp-route-id="@note.Id" class="btn btn-sm btn-primary">Edit</a>
+                                <a asp-page="Delete" asp-route-id="@note.Id" class="btn btn-sm btn-danger">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
