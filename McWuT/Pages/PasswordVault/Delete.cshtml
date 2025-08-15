@@ -1,0 +1,131 @@
+@page
+@model McWuT.Web.Pages.PasswordVault.DeleteModel
+@{
+    ViewData["Title"] = "Delete Password Entry";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Delete Password Entry
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.Entry != null)
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-warning me-2"></i>
+                            <strong>Warning!</strong> This action cannot be undone. Are you sure you want to delete this password entry?
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-sm-3 fw-bold">Name:</div>
+                            <div class="col-sm-9">
+                                <i class="bi bi-tag me-2"></i>@Model.Entry.Name
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Entry.Website))
+                        {
+                            <div class="row mb-3">
+                                <div class="col-sm-3 fw-bold">Website:</div>
+                                <div class="col-sm-9">
+                                    <i class="bi bi-globe me-2"></i>@Model.Entry.Website
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Entry.Username))
+                        {
+                            <div class="row mb-3">
+                                <div class="col-sm-3 fw-bold">Username:</div>
+                                <div class="col-sm-9">
+                                    <i class="bi bi-person me-2"></i>@Model.Entry.Username
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Entry.Category))
+                        {
+                            <div class="row mb-3">
+                                <div class="col-sm-3 fw-bold">Category:</div>
+                                <div class="col-sm-9">
+                                    <span class="badge bg-secondary">@Model.Entry.Category</span>
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Entry.Notes))
+                        {
+                            <div class="row mb-3">
+                                <div class="col-sm-3 fw-bold">Notes:</div>
+                                <div class="col-sm-9">
+                                    <div class="text-muted">@Model.Entry.Notes</div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="row mb-3">
+                            <div class="col-sm-3 fw-bold">Password:</div>
+                            <div class="col-sm-9">
+                                @if (!string.IsNullOrEmpty(Model.Entry.EncryptedPassword))
+                                {
+                                    <span class="text-success">
+                                        <i class="bi bi-check-circle me-1"></i>Password stored
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        <i class="bi bi-dash-circle me-1"></i>No password stored
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-sm-3 fw-bold">Created:</div>
+                            <div class="col-sm-9">
+                                <small class="text-muted">@Model.Entry.CreatedAt.ToString("MMMM dd, yyyy 'at' h:mm tt")</small>
+                            </div>
+                        </div>
+
+                        @if (Model.Entry.UpdatedAt.HasValue)
+                        {
+                            <div class="row mb-4">
+                                <div class="col-sm-3 fw-bold">Last Updated:</div>
+                                <div class="col-sm-9">
+                                    <small class="text-muted">@Model.Entry.UpdatedAt.Value.ToString("MMMM dd, yyyy 'at' h:mm tt")</small>
+                                </div>
+                            </div>
+                        }
+
+                        <form method="post">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a asp-page="./Index" class="btn btn-outline-secondary me-md-2">
+                                    <i class="bi bi-arrow-left me-1"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you absolutely sure you want to delete this password entry? This action cannot be undone.')">
+                                    <i class="bi bi-trash me-1"></i>Delete Entry
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-circle me-2"></i>
+                            Password entry not found or you don't have permission to access it.
+                        </div>
+                        <a asp-page="./Index" class="btn btn-primary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Password Vault
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

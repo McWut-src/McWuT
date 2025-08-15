@@ -19,12 +19,16 @@ namespace McWuT.Web
 
             builder.Services.AddScoped(typeof(EntityService<>));
             builder.Services.AddScoped<INotesService, NotesService>();
+            builder.Services.AddScoped<IPasswordVaultService, PasswordVaultService>();
+
+            // Add Data Protection
+            //builder.Services.AddDataProtection();
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                             .AddRoles<IdentityRole>()
                             .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            builder.Configuration["ConnectionStrings:DefaultConnection"] = "Server=localhost;Database=MyDatabase243;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+            builder.Configuration["ConnectionStrings:DefaultConnection"] = "Server=localhost;Database=mydb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
 
 
             var app = builder.Build();
