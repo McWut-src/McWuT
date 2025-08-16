@@ -37,6 +37,19 @@
                                 </a>
                             </li>
                         }
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="toolsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-tools me-1"></i>Tools
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="toolsDropdown">
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Tools/JsonBeautifier">
+                                    <i class="bi bi-braces-asterisk me-2"></i>JSON Beautifier
+                                </a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Tools/XmlBeautifier">
+                                    <i class="bi bi-code-square me-2"></i>XML Beautifier
+                                </a></li>
+                            </ul>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>

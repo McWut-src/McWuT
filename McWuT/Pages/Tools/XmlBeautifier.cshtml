@@ -1,0 +1,467 @@
+@page
+@model McWuT.Web.Pages.Tools.XmlBeautifierModel
+@{
+    ViewData["Title"] = "XML Beautifier";
+}
+
+<div class="container py-4" id="xmlb-root">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0"><i class="bi bi-code-square me-2 text-light" id="iconTitle"></i>XML Beautifier</h2>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle" checked>
+            <label class="form-check-label" for="themeToggle"><i class="bi bi-moon-stars me-1 text-light" id="iconTheme"></i>Dark mode</label>
+        </div>
+    </div>
+
+    <div id="alertContainer" class="d-none">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2 text-light" id="iconAlert"></i>
+            <span id="alertMessage">Invalid XML</span>
+            <button type="button" class="btn-close" aria-label="Close" onclick="hideAlert()"></button>
+        </div>
+    </div>
+
+    <div class="row g-3 align-items-stretch" id="panesRow">
+        <!-- Raw XML Pane -->
+        <div class="col-12 col-lg-6" id="rawPane">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-file-code me-2 text-light" id="iconRaw"></i>Raw XML</strong>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="copyRawBtn" title="Copy to clipboard">
+                            <i class="bi bi-clipboard text-light" id="iconCopyRaw"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="downloadRawBtn" title="Download as .xml">
+                            <i class="bi bi-download text-light" id="iconDownloadRaw"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="maximizeRawBtn" title="Maximize">
+                            <i class="bi bi-arrows-fullscreen text-light" id="iconMaxRaw"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <textarea id="rawInput" class="form-control flex-grow-1" placeholder="Paste or type XML here..." spellcheck="false" rows="16"></textarea>
+                    <div class="d-flex justify-content-end mt-3 gap-2">
+                        <button class="btn btn-outline-secondary" type="button" id="clearRawBtn"><i class="bi bi-x-circle me-1 text-light" id="iconClearRaw"></i>Clear</button>
+                        <button class="btn btn-primary" type="button" id="beautifyBtn"><i class="bi bi-magic me-1 text-light" id="iconBeautify"></i>Beautify</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beautified XML Pane -->
+        <div class="col-12 col-lg-6" id="prettyPane">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-code-square me-2 text-light" id="iconPretty"></i>Beautified</strong>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="copyPrettyBtn" title="Copy to clipboard">
+                            <i class="bi bi-clipboard text-light" id="iconCopyPretty"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="downloadPrettyBtn" title="Download as .xml">
+                            <i class="bi bi-download text-light" id="iconDownloadPretty"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="maximizePrettyBtn" title="Maximize">
+                            <i class="bi bi-arrows-fullscreen text-light" id="iconMaxPretty"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <pre class="flex-grow-1 mb-0 bg-body-tertiary rounded p-3 overflow-auto" id="prettyOutput" aria-live="polite"></pre>
+                    <div class="d-flex justify-content-end mt-3 gap-2">
+                        <button class="btn btn-outline-primary" type="button" id="minifyBtn"><i class="bi bi-arrow-left-right me-1 text-light" id="iconMinify"></i>Minify ? Raw</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(() => {
+    const root = document.getElementById('xmlb-root');
+    const themeToggle = document.getElementById('themeToggle');
+    // Set dark mode by default
+    root.classList.add('dark-mode');
+    themeToggle.checked = true;
+
+    // Helper to set icon colors for dark/light theme
+    function setIconTheme(isDark) {
+        const iconIds = [
+            'iconTitle','iconTheme','iconAlert','iconRaw','iconCopyRaw','iconDownloadRaw','iconMaxRaw','iconClearRaw','iconBeautify',
+            'iconPretty','iconCopyPretty','iconDownloadPretty','iconMaxPretty','iconMinify'
+        ];
+        for (const id of iconIds) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.toggle('text-light', isDark);
+                el.classList.toggle('text-dark', !isDark);
+            }
+        }
+    }
+    setIconTheme(true);
+
+    themeToggle.addEventListener('change', (e) => {
+        const isDark = e.target.checked;
+        root.classList.toggle('dark-mode', isDark);
+        setIconTheme(isDark);
+    });
+
+    const rawInput = document.getElementById('rawInput');
+    const prettyOutput = document.getElementById('prettyOutput');
+    const alertContainer = document.getElementById('alertContainer');
+    const alertMessage = document.getElementById('alertMessage');
+
+    let currentXmlDoc = null; // last successfully parsed XML document
+
+    // Accessibility helpers
+    function showAlert(message) {
+        alertMessage.textContent = message || 'Invalid XML';
+        alertContainer.classList.remove('d-none');
+        alertContainer.querySelector('.alert').classList.add('show');
+    }
+    window.hideAlert = function() {
+        alertContainer.classList.add('d-none');
+    }
+
+    function htmlEscape(str) {
+        return str.replace(/[&<>"']/g, function(m) {
+            switch (m) {
+                case '&': return '&amp;';
+                case '<': return '&lt;';
+                case '>': return '&gt;';
+                case '"': return '&quot;';
+                case "'": return '&#39;';
+                default: return m;
+            }
+        });
+    }
+
+    function syntaxHighlight(xmlString) {
+        const esc = htmlEscape(xmlString);
+        return esc
+            // XML declarations and processing instructions
+            .replace(/(&lt;\?xml[^?]*\?&gt;)/g, '<span class="xml-declaration">$1</span>')
+            .replace(/(&lt;\?[^?]*\?&gt;)/g, '<span class="xml-processing">$1</span>')
+            // Comments
+            .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="xml-comment">$1</span>')
+            // CDATA sections
+            .replace(/(&lt;!\[CDATA\[[\s\S]*?\]\]&gt;)/g, '<span class="xml-cdata">$1</span>')
+            // DOCTYPE declarations
+            .replace(/(&lt;!DOCTYPE[^&gt;]*&gt;)/g, '<span class="xml-doctype">$1</span>')
+            // Opening and closing tags with attributes
+            .replace(/(&lt;\/?)([\w:-]+)([^&gt;]*?)(&gt;)/g, function(match, openBracket, tagName, attributes, closeBracket) {
+                let result = '<span class="xml-bracket">' + openBracket + '</span>';
+                result += '<span class="xml-tag">' + tagName + '</span>';
+                
+                // Highlight attributes
+                if (attributes) {
+                    attributes = attributes.replace(/([\w:-]+)(\s*=\s*)(&quot;[^&quot;]*&quot;|&#39;[^&#39;]*&#39;)/g, 
+                        '<span class="xml-attr-name">$1</span><span class="xml-operator">$2</span><span class="xml-attr-value">$3</span>');
+                    result += attributes;
+                }
+                
+                result += '<span class="xml-bracket">' + closeBracket + '</span>';
+                return result;
+            })
+            // Text content (simple approach - between tags)
+            .replace(/(&gt;)([^&lt;]+)(&lt;)/g, '$1<span class="xml-text">$2</span>$3');
+    }
+
+    function setPrettyOutput(text) {
+        prettyOutput.innerHTML = syntaxHighlight(text);
+        prettyOutput.dataset.raw = text; // store raw pretty string for copy/download
+    }
+
+    function parseXML(xmlString) {
+        try {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            
+            // Check for parsing errors
+            const parserError = xmlDoc.querySelector('parsererror');
+            if (parserError) {
+                throw new Error(parserError.textContent || 'XML parsing error');
+            }
+            
+            return xmlDoc;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    function formatXML(xmlString, indent = 2) {
+        try {
+            // Parse and validate the XML first
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            
+            // Check for parsing errors
+            const parserError = xmlDoc.querySelector('parsererror');
+            if (parserError) {
+                throw new Error(parserError.textContent || 'XML parsing error');
+            }
+
+            // Use a more robust formatting approach
+            function formatNode(node, currentIndent = '') {
+                const indentStr = ' '.repeat(indent);
+                let result = '';
+                
+                switch (node.nodeType) {
+                    case Node.ELEMENT_NODE:
+                        const tagName = node.tagName;
+                        const attributes = Array.from(node.attributes)
+                            .map(attr => ` ${attr.name}="${attr.value}"`)
+                            .join('');
+                        
+                        const hasChildElements = Array.from(node.childNodes)
+                            .some(child => child.nodeType === Node.ELEMENT_NODE);
+                        
+                        const hasTextContent = Array.from(node.childNodes)
+                            .some(child => child.nodeType === Node.TEXT_NODE && child.textContent.trim());
+                        
+                        if (node.childNodes.length === 0) {
+                            // Self-closing tag
+                            result += `${currentIndent}<${tagName}${attributes}/>`;
+                        } else if (hasChildElements) {
+                            // Has child elements - format with indentation
+                            result += `${currentIndent}<${tagName}${attributes}>`;
+                            
+                            for (const child of node.childNodes) {
+                                const childFormatted = formatNode(child, currentIndent + indentStr);
+                                if (childFormatted.trim()) {
+                                    result += '\n' + childFormatted;
+                                }
+                            }
+                            
+                            result += `\n${currentIndent}</${tagName}>`;
+                        } else if (hasTextContent) {
+                            // Has only text content - keep on same line
+                            const textContent = node.textContent.trim();
+                            result += `${currentIndent}<${tagName}${attributes}>${textContent}</${tagName}>`;
+                        } else {
+                            // Empty element
+                            result += `${currentIndent}<${tagName}${attributes}></${tagName}>`;
+                        }
+                        break;
+                        
+                    case Node.TEXT_NODE:
+                        const text = node.textContent.trim();
+                        if (text) {
+                            result += text;
+                        }
+                        break;
+                        
+                    case Node.COMMENT_NODE:
+                        result += `${currentIndent}<!--${node.textContent}-->`;
+                        break;
+                        
+                    case Node.PROCESSING_INSTRUCTION_NODE:
+                        result += `${currentIndent}<?${node.target} ${node.data}?>`;
+                        break;
+                        
+                    case Node.CDATA_SECTION_NODE:
+                        result += `${currentIndent}<![CDATA[${node.textContent}]]>`;
+                        break;
+                }
+                
+                return result;
+            }
+            
+            let formatted = '';
+            
+            // Handle XML declaration
+            if (xmlString.trim().startsWith('<?xml')) {
+                const xmlDeclMatch = xmlString.match(/<\?xml[^?]*\?>/);
+                if (xmlDeclMatch) {
+                    formatted += xmlDeclMatch[0] + '\n';
+                }
+            }
+            
+            // Format each top-level node
+            for (const child of xmlDoc.childNodes) {
+                const nodeFormatted = formatNode(child);
+                if (nodeFormatted.trim()) {
+                    if (formatted && !formatted.endsWith('\n')) {
+                        formatted += '\n';
+                    }
+                    formatted += nodeFormatted;
+                }
+            }
+            
+            return formatted;
+            
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    function minifyXML(xmlString) {
+        try {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            
+            // Check for parsing errors
+            const parserError = xmlDoc.querySelector('parsererror');
+            if (parserError) {
+                throw new Error(parserError.textContent || 'XML parsing error');
+            }
+
+            const serializer = new XMLSerializer();
+            let minified = serializer.serializeToString(xmlDoc);
+            
+            // Remove extra whitespace between tags
+            minified = minified.replace(/>\s+</g, '><');
+            
+            return minified;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    // Buttons
+    document.getElementById('beautifyBtn').addEventListener('click', () => {
+        hideAlert();
+        try {
+            const input = rawInput.value.trim();
+            if (!input) {
+                showAlert('Please enter some XML to beautify');
+                return;
+            }
+            
+            const formatted = formatXML(input);
+            currentXmlDoc = parseXML(input);
+            setPrettyOutput(formatted);
+        } catch (e) {
+            showAlert(e.message || 'Invalid XML');
+        }
+    });
+
+    document.getElementById('minifyBtn').addEventListener('click', () => {
+        hideAlert();
+        try {
+            let source = prettyOutput.dataset.raw;
+            if (!source) {
+                // attempt parse from raw input as fallback
+                source = rawInput.value.trim();
+                if (!source) {
+                    showAlert('Nothing to minify. Try Beautify first.');
+                    return;
+                }
+            }
+            
+            const minified = minifyXML(source);
+            rawInput.value = minified;
+        } catch (e) {
+            showAlert(e.message || 'Cannot minify invalid XML');
+        }
+    });
+
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {
+            const ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+        }
+    }
+
+    document.getElementById('copyRawBtn').addEventListener('click', () => copyToClipboard(rawInput.value));
+    document.getElementById('copyPrettyBtn').addEventListener('click', () => copyToClipboard(prettyOutput.dataset.raw || prettyOutput.textContent));
+
+    function downloadXml(text, fileName) {
+        const blob = new Blob([text], { type: 'application/xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('downloadRawBtn').addEventListener('click', () => {
+        const ts = new Date().toISOString().replace(/[:.]/g,'-');
+        downloadXml(rawInput.value || '<root></root>', `raw-${ts}.xml`);
+    });
+    document.getElementById('downloadPrettyBtn').addEventListener('click', () => {
+        const ts = new Date().toISOString().replace(/[:.]/g,'-');
+        const text = prettyOutput.dataset.raw || prettyOutput.textContent || '<root></root>';
+        downloadXml(text, `beautified-${ts}.xml`);
+    });
+
+    document.getElementById('clearRawBtn').addEventListener('click', () => {
+        rawInput.value = '';
+        currentXmlDoc = null;
+        prettyOutput.innerHTML = '';
+        prettyOutput.removeAttribute('data-raw');
+        hideAlert();
+    });
+
+    // Maximize logic
+    function toggleMaximize(which) {
+        const rawCol = document.getElementById('rawPane');
+        const prettyCol = document.getElementById('prettyPane');
+        if (which === 'raw') {
+            rawCol.classList.toggle('col-lg-12');
+            rawCol.classList.toggle('col-lg-6');
+            prettyCol.classList.toggle('d-none');
+        } else {
+            prettyCol.classList.toggle('col-lg-12');
+            prettyCol.classList.toggle('col-lg-6');
+            rawCol.classList.toggle('d-none');
+        }
+    }
+
+    document.getElementById('maximizeRawBtn').addEventListener('click', () => toggleMaximize('raw'));
+    document.getElementById('maximizePrettyBtn').addEventListener('click', () => toggleMaximize('pretty'));
+})();
+</script>
+
+<style>
+    /* Scoped styling */
+    #xmlb-root .card { transition: background-color .2s ease; }
+    #xmlb-root.dark-mode .card {
+        background-color: #1e1e1e; color: #e6e6e6;
+    }
+    #xmlb-root.dark-mode .card-header {
+        background-color: #2a2a2a; color: #e6e6e6;
+        border-bottom-color: #3a3a3a;
+    }
+    #xmlb-root.dark-mode .bg-body-tertiary { background-color: #151515 !important; }
+    #xmlb-root.dark-mode textarea.form-control {
+        background-color: #121212; color: #e6e6e6; border-color: #3a3a3a;
+    }
+
+    /* XML syntax colors - Light mode */
+    #xmlb-root .xml-declaration { color: #8e44ad; font-weight: bold; }
+    #xmlb-root .xml-processing { color: #8e44ad; }
+    #xmlb-root .xml-comment { color: #27ae60; font-style: italic; }
+    #xmlb-root .xml-cdata { color: #e74c3c; }
+    #xmlb-root .xml-doctype { color: #8e44ad; }
+    #xmlb-root .xml-bracket { color: #34495e; }
+    #xmlb-root .xml-tag { color: #0d6efd; font-weight: bold; }
+    #xmlb-root .xml-attr-name { color: #d35400; }
+    #xmlb-root .xml-operator { color: #34495e; }
+    #xmlb-root .xml-attr-value { color: #198754; }
+    #xmlb-root .xml-text { color: #2c3e50; }
+
+    /* XML syntax colors - Dark mode */
+    #xmlb-root.dark-mode .xml-declaration { color: #bb86fc; font-weight: bold; }
+    #xmlb-root.dark-mode .xml-processing { color: #bb86fc; }
+    #xmlb-root.dark-mode .xml-comment { color: #6ab7ff; font-style: italic; }
+    #xmlb-root.dark-mode .xml-cdata { color: #ff9aa2; }
+    #xmlb-root.dark-mode .xml-doctype { color: #bb86fc; }
+    #xmlb-root.dark-mode .xml-bracket { color: #b0bec5; }
+    #xmlb-root.dark-mode .xml-tag { color: #6ea8fe; font-weight: bold; }
+    #xmlb-root.dark-mode .xml-attr-name { color: #ffb077; }
+    #xmlb-root.dark-mode .xml-operator { color: #b0bec5; }
+    #xmlb-root.dark-mode .xml-attr-value { color: #75b798; }
+    #xmlb-root.dark-mode .xml-text { color: #cfd8dc; }
+
+    #xmlb-root pre { white-space: pre; }
+</style>
+}
