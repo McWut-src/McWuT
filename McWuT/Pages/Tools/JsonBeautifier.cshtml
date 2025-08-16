@@ -1,0 +1,287 @@
+@page
+@model McWuT.Web.Pages.Tools.JsonBeautifierModel
+@{
+    ViewData["Title"] = "JSON Beautifier";
+}
+
+<div class="container py-4" id="jsonb-root">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0"><i class="bi bi-braces-asterisk me-2 text-light" id="iconTitle"></i>JSON Beautifier</h2>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle" checked>
+            <label class="form-check-label" for="themeToggle"><i class="bi bi-moon-stars me-1 text-light" id="iconTheme"></i>Dark mode</label>
+        </div>
+    </div>
+
+    <div id="alertContainer" class="d-none">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2 text-light" id="iconAlert"></i>
+            <span id="alertMessage">Invalid JSON</span>
+            <button type="button" class="btn-close" aria-label="Close" onclick="hideAlert()"></button>
+        </div>
+    </div>
+
+    <div class="row g-3 align-items-stretch" id="panesRow">
+        <!-- Raw JSON Pane -->
+        <div class="col-12 col-lg-6" id="rawPane">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-filetype-json me-2 text-light" id="iconRaw"></i>Raw JSON</strong>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="copyRawBtn" title="Copy to clipboard">
+                            <i class="bi bi-clipboard text-light" id="iconCopyRaw"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="downloadRawBtn" title="Download as .json">
+                            <i class="bi bi-download text-light" id="iconDownloadRaw"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="maximizeRawBtn" title="Maximize">
+                            <i class="bi bi-arrows-fullscreen text-light" id="iconMaxRaw"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <textarea id="rawInput" class="form-control flex-grow-1" placeholder="Paste or type JSON here..." spellcheck="false" rows="16"></textarea>
+                    <div class="d-flex justify-content-end mt-3 gap-2">
+                        <button class="btn btn-outline-secondary" type="button" id="clearRawBtn"><i class="bi bi-x-circle me-1 text-light" id="iconClearRaw"></i>Clear</button>
+                        <button class="btn btn-primary" type="button" id="beautifyBtn"><i class="bi bi-magic me-1 text-light" id="iconBeautify"></i>Beautify</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beautified JSON Pane -->
+        <div class="col-12 col-lg-6" id="prettyPane">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-braces me-2 text-light" id="iconPretty"></i>Beautified</strong>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="copyPrettyBtn" title="Copy to clipboard">
+                            <i class="bi bi-clipboard text-light" id="iconCopyPretty"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="downloadPrettyBtn" title="Download as .json">
+                            <i class="bi bi-download text-light" id="iconDownloadPretty"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="maximizePrettyBtn" title="Maximize">
+                            <i class="bi bi-arrows-fullscreen text-light" id="iconMaxPretty"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <pre class="flex-grow-1 mb-0 bg-body-tertiary rounded p-3 overflow-auto" id="prettyOutput" aria-live="polite"></pre>
+                    <div class="d-flex justify-content-end mt-3 gap-2">
+                        <button class="btn btn-outline-secondary" type="button" id="copyHighlightedBtn" hidden>Copy Highlighted</button>
+                        <button class="btn btn-outline-primary" type="button" id="minifyBtn"><i class="bi bi-arrow-left-right me-1 text-light" id="iconMinify"></i>Minify ? Raw</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(() => {
+    const root = document.getElementById('jsonb-root');
+    const themeToggle = document.getElementById('themeToggle');
+    // Set dark mode by default
+    root.classList.add('dark-mode');
+    themeToggle.checked = true;
+
+    // Helper to set icon colors for dark/light theme
+    function setIconTheme(isDark) {
+        const iconIds = [
+            'iconTitle','iconTheme','iconAlert','iconRaw','iconCopyRaw','iconDownloadRaw','iconMaxRaw','iconClearRaw','iconBeautify',
+            'iconPretty','iconCopyPretty','iconDownloadPretty','iconMaxPretty','iconMinify'
+        ];
+        for (const id of iconIds) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.toggle('text-light', isDark);
+                el.classList.toggle('text-dark', !isDark);
+            }
+        }
+    }
+    setIconTheme(true);
+
+    themeToggle.addEventListener('change', (e) => {
+        const isDark = e.target.checked;
+        root.classList.toggle('dark-mode', isDark);
+        setIconTheme(isDark);
+    });
+
+    const panesRow = document.getElementById('panesRow');
+    const rawInput = document.getElementById('rawInput');
+    const prettyOutput = document.getElementById('prettyOutput');
+    const alertContainer = document.getElementById('alertContainer');
+    const alertMessage = document.getElementById('alertMessage');
+
+    let currentJson = null; // last successfully parsed JSON object
+
+    // Accessibility helpers
+    function showAlert(message) {
+        alertMessage.textContent = message || 'Invalid JSON';
+        alertContainer.classList.remove('d-none');
+        alertContainer.querySelector('.alert').classList.add('show');
+    }
+    window.hideAlert = function() {
+        alertContainer.classList.add('d-none');
+    }
+
+    function htmlEscape(str) {
+        return str.replace(/[&<>"']/g, function(m) {
+            switch (m) {
+                case '&': return '&amp;';
+                case '<': return '&lt;';
+                case '>': return '&gt;';
+                case '"': return '&quot';
+                case "'": return '&#39;';
+                default: return m;
+            }
+        });
+    }
+
+    function syntaxHighlight(jsonString) {
+        const esc = htmlEscape(jsonString);
+        return esc.replace(/("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*"\s*:?)|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
+            function (match) {
+                let cls = 'json-number';
+                if (/^\s*"/.test(match)) {
+                    cls = /:\s*$/.test(match) ? 'json-key' : 'json-string';
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            }
+        );
+    }
+
+    function setPrettyOutput(text) {
+        prettyOutput.innerHTML = syntaxHighlight(text);
+        prettyOutput.dataset.raw = text; // store raw pretty string for copy/download
+    }
+
+    // Buttons
+    document.getElementById('beautifyBtn').addEventListener('click', () => {
+        hideAlert();
+        try {
+            const input = rawInput.value;
+            const parsed = JSON.parse(input);
+            currentJson = parsed;
+            const pretty = JSON.stringify(parsed, null, 2);
+            setPrettyOutput(pretty);
+        } catch (e) {
+            showAlert(e.message || 'Invalid JSON');
+        }
+    });
+
+    document.getElementById('minifyBtn').addEventListener('click', () => {
+        hideAlert();
+        try {
+            let source = currentJson;
+            if (source == null) {
+                // attempt parse from raw input as fallback
+                source = JSON.parse(rawInput.value);
+            }
+            const min = JSON.stringify(source);
+            rawInput.value = min;
+        } catch (e) {
+            showAlert(e.message || 'Nothing to minify. Try Beautify first.');
+        }
+    });
+
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {
+            const ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+        }
+    }
+
+    document.getElementById('copyRawBtn').addEventListener('click', () => copyToClipboard(rawInput.value));
+    document.getElementById('copyPrettyBtn').addEventListener('click', () => copyToClipboard(prettyOutput.dataset.raw || prettyOutput.textContent));
+
+    function downloadJson(text, fileName) {
+        const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('downloadRawBtn').addEventListener('click', () => {
+        const ts = new Date().toISOString().replace(/[:.]/g,'-');
+        downloadJson(rawInput.value || '{}', `raw-${ts}.json`);
+    });
+    document.getElementById('downloadPrettyBtn').addEventListener('click', () => {
+        const ts = new Date().toISOString().replace(/[:.]/g,'-');
+        const text = prettyOutput.dataset.raw || prettyOutput.textContent || '{}';
+        downloadJson(text, `beautified-${ts}.json`);
+    });
+
+    document.getElementById('clearRawBtn').addEventListener('click', () => {
+        rawInput.value = '';
+        currentJson = null;
+        prettyOutput.innerHTML = '';
+        prettyOutput.removeAttribute('data-raw');
+        hideAlert();
+    });
+
+    // Maximize logic
+    function toggleMaximize(which) {
+        const rawCol = document.getElementById('rawPane');
+        const prettyCol = document.getElementById('prettyPane');
+        if (which === 'raw') {
+            rawCol.classList.toggle('col-lg-12');
+            rawCol.classList.toggle('col-lg-6');
+            prettyCol.classList.toggle('d-none');
+        } else {
+            prettyCol.classList.toggle('col-lg-12');
+            prettyCol.classList.toggle('col-lg-6');
+            rawCol.classList.toggle('d-none');
+        }
+    }
+
+    document.getElementById('maximizeRawBtn').addEventListener('click', () => toggleMaximize('raw'));
+    document.getElementById('maximizePrettyBtn').addEventListener('click', () => toggleMaximize('pretty'));
+})();
+</script>
+
+<style>
+    /* Scoped styling */
+    #jsonb-root .card { transition: background-color .2s ease; }
+    #jsonb-root.dark-mode .card {
+        background-color: #1e1e1e; color: #e6e6e6;
+    }
+    #jsonb-root.dark-mode .card-header {
+        background-color: #2a2a2a; color: #e6e6e6;
+        border-bottom-color: #3a3a3a;
+    }
+    #jsonb-root.dark-mode .bg-body-tertiary { background-color: #151515 !important; }
+    #jsonb-root.dark-mode textarea.form-control {
+        background-color: #121212; color: #e6e6e6; border-color: #3a3a3a;
+    }
+
+    /* JSON syntax colors */
+    #jsonb-root .json-key { color: #0d6efd; }
+    #jsonb-root .json-string { color: #198754; }
+    #jsonb-root .json-number { color: #fd7e14; }
+    #jsonb-root .json-boolean { color: #dc3545; }
+    #jsonb-root .json-null { color: #6f42c1; }
+
+    #jsonb-root.dark-mode .json-key { color: #6ea8fe; }
+    #jsonb-root.dark-mode .json-string { color: #75b798; }
+    #jsonb-root.dark-mode .json-number { color: #ffb077; }
+    #jsonb-root.dark-mode .json-boolean { color: #ff9aa2; }
+    #jsonb-root.dark-mode .json-null { color: #cdb6ff; }
+
+    #jsonb-root pre { white-space: pre; }
+</style>
+}
