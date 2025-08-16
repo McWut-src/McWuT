@@ -1,0 +1,204 @@
+@page
+@using McWuT.Web.Pages.Shopping
+@model DeleteModel
+@{
+    ViewData["Title"] = "Delete Shopping List";
+}
+
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-page="./Index" class="text-decoration-none"><i class="bi bi-cart-check me-1"></i>Shopping Lists</a></li>
+                    <li class="breadcrumb-item"><a asp-page="./Details" asp-route-id="@Model.ShoppingList.UniqueId" class="text-decoration-none text-truncate">@Model.ShoppingList.Name</a></li>
+                    <li class="breadcrumb-item active">Delete</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="p-4 bg-danger bg-opacity-10 rounded-circle d-inline-flex mb-3">
+                    <i class="bi bi-exclamation-triangle display-4 text-danger"></i>
+                </div>
+                <h1 class="fw-bold text-dark mb-2">Delete Shopping List</h1>
+                <p class="text-muted fs-5">This action cannot be undone</p>
+            </div>
+
+            <!-- Warning Card -->
+            <div class="card border-danger border-2 shadow-lg mb-4">
+                <div class="card-header bg-danger bg-opacity-10 border-danger py-4">
+                    <h4 class="mb-0 fw-semibold text-danger text-center">
+                        <i class="bi bi-shield-exclamation me-2"></i>Permanent Deletion
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <!-- Confirmation Message -->
+                    <div class="alert alert-danger border-0 rounded-3 mb-4" role="alert">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-exclamation-triangle me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Are you sure you want to delete this shopping list?</h6>
+                                <p class="mb-0 small">This will permanently remove the list and all its items.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- List Details -->
+                    <div class="mb-4 p-4 bg-light rounded-3">
+                        <h6 class="fw-semibold text-dark mb-3">
+                            <i class="bi bi-info-circle me-2 text-primary"></i>List Details
+                        </h6>
+                        
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-3 bg-white rounded-2 border">
+                                    <div class="p-2 bg-warning bg-opacity-10 rounded-circle me-3">
+                                        <i class="bi bi-list-ul text-warning"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold text-dark">@Model.ShoppingList.Name</div>
+                                        <div class="small text-muted">List Name</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center p-3 bg-white rounded-2 border">
+                                    <div class="p-2 bg-primary bg-opacity-10 rounded-circle me-3">
+                                        <i class="bi bi-calendar3 text-primary"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold text-dark">@Model.ShoppingList.CreatedDate.ToString("MMM dd")</div>
+                                        <div class="small text-muted">Created</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center p-3 bg-white rounded-2 border">
+                                    <div class="p-2 bg-success bg-opacity-10 rounded-circle me-3">
+                                        <i class="bi bi-list-ol text-success"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold text-dark">@Model.Items.Count</div>
+                                        <div class="small text-muted">Items</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Items.Any())
+                    {
+                        <!-- Items Warning -->
+                        <div class="alert alert-warning border-0 rounded-3 mb-4" role="alert">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-exclamation-circle me-3 mt-1"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">This list contains @Model.Items.Count item(s)</h6>
+                                    <p class="mb-0 small">All items will be permanently deleted along with the list.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Items Preview -->
+                        <div class="mb-4">
+                            <h6 class="fw-semibold text-dark mb-3">Items to be deleted:</h6>
+                            <div class="bg-light rounded-3 p-3" style="max-height: 200px; overflow-y: auto;">
+                                @foreach (var item in Model.Items.Take(10))
+                                {
+                                    <div class="d-flex align-items-center py-1 @(item != Model.Items.Take(10).Last() ? "border-bottom" : "") border-light">
+                                        <i class="bi bi-dot text-muted me-2"></i>
+                                        <span class="text-dark">@item.Name</span>
+                                        @if (!string.IsNullOrEmpty(item.Quantity))
+                                        {
+                                            <span class="text-muted ms-2">(@item.Quantity)</span>
+                                        }
+                                        @if (item.IsPurchased)
+                                        {
+                                            <i class="bi bi-check-circle text-success ms-auto"></i>
+                                        }
+                                    </div>
+                                }
+                                @if (Model.Items.Count > 10)
+                                {
+                                    <div class="text-muted small mt-2 text-center">
+                                        ... and @(Model.Items.Count - 10) more items
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Final Warning -->
+                    <div class="alert alert-danger border-0 rounded-3 mb-4" role="alert">
+                        <div class="text-center">
+                            <i class="bi bi-exclamation-octagon fs-3 text-danger mb-2"></i>
+                            <h6 class="fw-bold mb-1">This action cannot be undone!</h6>
+                            <p class="mb-0 small">Once deleted, this shopping list and all its data will be permanently lost.</p>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <form method="post">
+                        <div class="d-flex flex-column flex-md-row gap-3">
+                            <a asp-page="./Details" asp-route-id="@Model.ShoppingList.UniqueId" class="btn btn-outline-secondary btn-lg px-4 order-2 order-md-1">
+                                <i class="bi bi-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg px-5 flex-grow-1 fw-semibold order-1 order-md-2 shadow">
+                                <i class="bi bi-trash me-2"></i>Yes, Delete List
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Safety Tips -->
+            <div class="card border-0 bg-info bg-opacity-10">
+                <div class="card-body p-4 text-center">
+                    <h6 class="fw-semibold text-info mb-2">
+                        <i class="bi bi-lightbulb me-2"></i>Alternative Options
+                    </h6>
+                    <p class="text-info small mb-3">
+                        Consider these alternatives before deleting:
+                    </p>
+                    <div class="d-flex flex-column flex-md-row gap-2 justify-content-center">
+                        <a asp-page="./Edit" asp-route-id="@Model.ShoppingList.UniqueId" class="btn btn-info btn-sm">
+                            <i class="bi bi-pencil me-1"></i>Rename List
+                        </a>
+                        <a asp-page="./Details" asp-route-id="@Model.ShoppingList.UniqueId" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-archive me-1"></i>Clear Items
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 1rem !important;
+}
+
+.card-header {
+    border-radius: 1rem 1rem 0 0 !important;
+}
+
+.btn {
+    border-radius: 0.5rem;
+}
+
+.alert {
+    border-radius: 0.75rem !important;
+}
+
+.bg-light {
+    border-radius: 0.5rem !important;
+}
+</style>

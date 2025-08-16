@@ -5,6 +5,7 @@ using McWuT.Services.Notes;
 using McWuT.Services;
 using McWuT.Data.Repositories.Base;
 using McWuT.Services.PasswordVault;
+using McWuT.Services.Shopping;
 
 namespace McWuT.Web
 {
@@ -22,6 +23,8 @@ namespace McWuT.Web
 
             builder.Services.AddScoped<INotesService, NotesService>();
             builder.Services.AddScoped<IPasswordVaultService, PasswordVaultService>();
+            builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
+            builder.Services.AddScoped<IShoppingItemService, ShoppingItemService>();
             builder.Services.AddScoped(typeof(IEntityRepository<>), typeof(EntityRepository<>));
             builder.Services.AddScoped(typeof(IUserEntityRepository<>), typeof(UserEntityRepository<>));
 

@@ -1,0 +1,184 @@
+@page
+@using McWuT.Web.Pages.Shopping
+@model EditModel
+@{
+    ViewData["Title"] = "Edit Shopping List";
+}
+
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-page="./Index" class="text-decoration-none"><i class="bi bi-cart-check me-1"></i>Shopping Lists</a></li>
+                    <li class="breadcrumb-item"><a asp-page="./Details" asp-route-id="@Model.ShoppingList.UniqueId" class="text-decoration-none text-truncate">@Model.ShoppingList.Name</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="p-4 bg-primary bg-opacity-10 rounded-circle d-inline-flex mb-3">
+                    <i class="bi bi-pencil display-4 text-primary"></i>
+                </div>
+                <h1 class="fw-bold text-dark mb-2">Edit Shopping List</h1>
+                <p class="text-muted fs-5">Update the name of your shopping list</p>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-gradient bg-primary text-white text-center py-4 border-0">
+                    <h4 class="mb-0 fw-semibold">
+                        <i class="bi bi-list-ul me-2"></i>List Settings
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 rounded-3" role="alert"></div>
+                        
+                        <!-- Hidden fields -->
+                        <input asp-for="ShoppingList.UniqueId" type="hidden" />
+                        <input asp-for="ShoppingList.Id" type="hidden" />
+                        <input asp-for="ShoppingList.UserId" type="hidden" />
+                        <input asp-for="ShoppingList.CreatedDate" type="hidden" />
+                        <input asp-for="ShoppingList.UpdatedDate" type="hidden" />
+                        <input asp-for="ShoppingList.DeletedDate" type="hidden" />
+                        
+                        <!-- Current Info -->
+                        <div class="mb-4 p-3 bg-light rounded-3">
+                            <h6 class="fw-semibold text-dark mb-2">
+                                <i class="bi bi-info-circle me-2 text-primary"></i>Current Information
+                            </h6>
+                            <div class="row g-3 small text-muted">
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-calendar3 me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold">Created</div>
+                                            <div>@Model.ShoppingList.CreatedDate.ToString("MMM dd, yyyy")</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-clock me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold">Last Updated</div>
+                                            <div>@((Model.ShoppingList.UpdatedDate ?? Model.ShoppingList.CreatedDate).ToString("MMM dd, yyyy"))</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Name Input -->
+                        <div class="mb-4">
+                            <label asp-for="ShoppingList.Name" class="form-label fw-semibold text-dark mb-2">
+                                <i class="bi bi-tag me-2 text-primary"></i>List Name <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-list-ul text-muted"></i>
+                                </span>
+                                <input asp-for="ShoppingList.Name" class="form-control border-start-0 ps-0" 
+                                       placeholder="Enter a descriptive name..." 
+                                       autocomplete="off" />
+                            </div>
+                            <span asp-validation-for="ShoppingList.Name" class="text-danger small"></span>
+                            <div class="form-text mt-2">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                Choose a name that clearly identifies this shopping list.
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex flex-column flex-md-row gap-3">
+                            <a asp-page="./Details" asp-route-id="@Model.ShoppingList.UniqueId" class="btn btn-outline-secondary btn-lg px-4 order-2 order-md-1">
+                                <i class="bi bi-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5 flex-grow-1 fw-semibold order-1 order-md-2 shadow">
+                                <i class="bi bi-check-lg me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body p-4">
+                    <div class="row g-3 text-center">
+                        <div class="col-6">
+                            <a asp-page="./Details" asp-route-id="@Model.ShoppingList.UniqueId" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-eye me-1"></i>
+                                <div class="small">View List</div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-page="./Delete" asp-route-id="@Model.ShoppingList.UniqueId" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-trash me-1"></i>
+                                <div class="small">Delete List</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="alert alert-info border-0 mt-4" role="alert">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-info-circle me-3 mt-1 text-info"></i>
+                    <div>
+                        <h6 class="fw-semibold mb-1">Tip</h6>
+                        <p class="mb-0 small">Changing the list name won't affect your items. All items will remain in the list with their current status.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Auto-focus and select the name input
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.getElementById('ShoppingList_Name');
+            nameInput.focus();
+            nameInput.select();
+        });
+    </script>
+}
+
+<style>
+.card {
+    border-radius: 1rem !important;
+}
+
+.card-header {
+    border-radius: 1rem 1rem 0 0 !important;
+}
+
+.btn {
+    border-radius: 0.5rem;
+}
+
+.input-group-text {
+    border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.form-control {
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.alert {
+    border-radius: 0.75rem !important;
+}
+</style>

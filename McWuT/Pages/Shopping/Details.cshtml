@@ -1,0 +1,381 @@
+@page
+@using McWuT.Web.Pages.Shopping
+@model DetailsModel
+@{
+    ViewData["Title"] = $"Shopping List: {Model.ShoppingList?.Name}";
+}
+
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-page="./Index" class="text-decoration-none"><i class="bi bi-cart-check me-1"></i>Shopping Lists</a></li>
+                    <li class="breadcrumb-item active text-truncate">@Model.ShoppingList.Name</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-gradient bg-warning text-dark shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                        <div class="mb-3 mb-md-0">
+                            <h1 class="fw-bold mb-2 d-flex align-items-center">
+                                <i class="bi bi-list-ul me-3 fs-1"></i>
+                                <span class="text-truncate">@Model.ShoppingList.Name</span>
+                            </h1>
+                            <div class="d-flex flex-wrap gap-3 text-dark-emphasis">
+                                <span class="d-flex align-items-center">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    Created @Model.ShoppingList.CreatedDate.ToString("MMM dd, yyyy")
+                                </span>
+                                <span class="d-flex align-items-center">
+                                    <i class="bi bi-list-ol me-1"></i>
+                                    @Model.Items.Count total items
+                                </span>
+                                @if (Model.Items.Any())
+                                {
+                                    <span class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        @Model.Items.Count(i => i.IsPurchased) completed
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a asp-page="./Edit" asp-route-id="@Model.ShoppingList.UniqueId" class="btn btn-dark">
+                                <i class="bi bi-pencil me-1"></i>Edit List
+                            </a>
+                            <a asp-page="./Index" class="btn btn-outline-dark">
+                                <i class="bi bi-arrow-left me-1"></i>Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Item Section -->
+        <div class="col-12 col-lg-4 order-2 order-lg-1">
+            <div class="sticky-lg-top" style="top: 1rem;">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0 fw-semibold">
+                            <i class="bi bi-plus-circle me-2"></i>Add New Item
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="post" asp-page-handler="AddItem" asp-route-id="@Model.ShoppingList.UniqueId">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 rounded-3" role="alert"></div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="ItemName" class="form-label fw-semibold">
+                                    <i class="bi bi-tag me-1 text-primary"></i>Item Name <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="ItemName" class="form-control form-control-lg" 
+                                       placeholder="e.g., Milk, Bread, Apples..." 
+                                       autocomplete="off" />
+                                <span asp-validation-for="ItemName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label asp-for="ItemQuantity" class="form-label fw-semibold">
+                                        <i class="bi bi-hash me-1 text-success"></i>Quantity
+                                    </label>
+                                    <input asp-for="ItemQuantity" class="form-control" 
+                                           placeholder="2 lbs, 1 gallon..." 
+                                           autocomplete="off" />
+                                    <span asp-validation-for="ItemQuantity" class="text-danger small"></span>
+                                </div>
+                                <div class="col-6">
+                                    <label asp-for="ItemCategory" class="form-label fw-semibold">
+                                        <i class="bi bi-collection me-1 text-info"></i>Category
+                                    </label>
+                                    <input asp-for="ItemCategory" class="form-control" 
+                                           placeholder="Dairy, Produce..." 
+                                           list="categoryList"
+                                           autocomplete="off" />
+                                    <span asp-validation-for="ItemCategory" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <datalist id="categoryList">
+                                <option value="Produce"></option>
+                                <option value="Dairy"></option>
+                                <option value="Meat & Seafood"></option>
+                                <option value="Bakery"></option>
+                                <option value="Frozen"></option>
+                                <option value="Pantry"></option>
+                                <option value="Beverages"></option>
+                                <option value="Snacks"></option>
+                                <option value="Health & Beauty"></option>
+                                <option value="Household"></option>
+                                <option value="Other"></option>
+                            </datalist>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold shadow-sm">
+                                <i class="bi bi-plus-lg me-2"></i>Add to List
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                @if (Model.Items.Any())
+                {
+                    <!-- Quick Stats -->
+                    <div class="card border-0 bg-light mt-4">
+                        <div class="card-body p-4 text-center">
+                            <div class="row g-3">
+                                <div class="col-4">
+                                    <div class="text-primary fs-4 fw-bold">@Model.Items.Count</div>
+                                    <div class="text-muted small">Total</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-success fs-4 fw-bold">@Model.Items.Count(i => i.IsPurchased)</div>
+                                    <div class="text-muted small">Done</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-warning fs-4 fw-bold">@Model.Items.Count(i => !i.IsPurchased)</div>
+                                    <div class="text-muted small">Pending</div>
+                                </div>
+                            </div>
+                            
+                            @if (Model.Items.Any())
+                            {
+                                <div class="mt-3">
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: @((Model.Items.Count(i => i.IsPurchased) / (double)Model.Items.Count * 100).ToString("F0"))%" 
+                                             aria-valuenow="@Model.Items.Count(i => i.IsPurchased)" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="@Model.Items.Count"></div>
+                                    </div>
+                                    <small class="text-muted">@((Model.Items.Count(i => i.IsPurchased) / (double)Model.Items.Count * 100).ToString("F0"))% Complete</small>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Items List Section -->
+        <div class="col-12 col-lg-8 order-1 order-lg-2">
+            @if (Model.Items.Any())
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                        <h5 class="mb-0 fw-semibold text-dark">
+                            <i class="bi bi-basket me-2 text-warning"></i>Shopping Items
+                        </h5>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-success" onclick="toggleAllItems(false)" title="Mark all as purchased">
+                                <i class="bi bi-check-all me-1"></i>All Done
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleAllItems(true)" title="Mark all as unpurchased">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var item in Model.Items.OrderBy(i => i.IsPurchased).ThenBy(i => i.Category).ThenBy(i => i.Name))
+                            {
+                                <div class="list-group-item border-0 py-3 px-4 @(item.IsPurchased ? "bg-light bg-opacity-50" : "")">
+                                    <div class="d-flex align-items-center">
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input form-check-input-lg item-checkbox" 
+                                                   type="checkbox" 
+                                                   @(item.IsPurchased ? "checked" : "")
+                                                   data-item-id="@item.UniqueId"
+                                                   style="transform: scale(1.2);" />
+                                        </div>
+                                        
+                                        <div class="flex-grow-1 @(item.IsPurchased ? "text-decoration-line-through text-muted" : "")">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <h6 class="mb-1 fw-semibold @(item.IsPurchased ? "" : "text-dark")">@item.Name</h6>
+                                                    @if (!string.IsNullOrEmpty(item.Quantity) || !string.IsNullOrEmpty(item.Category))
+                                                    {
+                                                        <div class="d-flex flex-wrap gap-3 small">
+                                                            @if (!string.IsNullOrEmpty(item.Quantity))
+                                                            {
+                                                                <span class="d-flex align-items-center text-success">
+                                                                    <i class="bi bi-hash me-1"></i>@item.Quantity
+                                                                </span>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(item.Category))
+                                                            {
+                                                                <span class="badge bg-secondary bg-opacity-75">
+                                                                    <i class="bi bi-tag me-1"></i>@item.Category
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                                
+                                                <form method="post" asp-page-handler="DeleteItem" asp-route-itemId="@item.UniqueId" asp-route-id="@Model.ShoppingList.UniqueId" class="d-inline">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                                            onclick="return confirm('Remove &quot;@item.Name&quot; from your list?')"
+                                                            title="Remove item">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Empty State -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <div class="p-4 bg-primary bg-opacity-10 rounded-circle d-inline-flex">
+                                <i class="bi bi-basket3 display-3 text-primary"></i>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-3">Ready for Shopping Items</h4>
+                        <p class="text-muted fs-5 mb-4">Add items to your shopping list using the form on the left.</p>
+                        <div class="d-none d-lg-block">
+                            <i class="bi bi-arrow-left text-primary fs-1"></i>
+                            <p class="text-primary mt-2 fw-semibold">Start adding items here</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function() {
+            // Auto-focus on item name input
+            $('#ItemName').focus();
+            
+            // Clear form after successful submission (if no validation errors)
+            @if (ViewData.ModelState.IsValid && TempData["SuccessMessage"] != null)
+            {
+                <text>
+                $('#ItemName').val('');
+                $('#ItemQuantity').val('');
+                $('#ItemCategory').val('');
+                $('#ItemName').focus();
+                </text>
+            }
+            
+            $('.item-checkbox').change(function() {
+                const itemId = $(this).data('item-id');
+                const checkbox = $(this);
+                
+                // Show loading state
+                checkbox.prop('disabled', true);
+                
+                $.post('@Url.Page("./Details", "TogglePurchased")', { 
+                    itemId: itemId,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                })
+                .done(function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        checkbox.prop('checked', !checkbox.prop('checked'));
+                        alert('Failed to update item status.');
+                    }
+                })
+                .fail(function() {
+                    checkbox.prop('checked', !checkbox.prop('checked'));
+                    alert('Failed to update item status.');
+                })
+                .always(function() {
+                    checkbox.prop('disabled', false);
+                });
+            });
+        });
+
+        function toggleAllItems(setUnpurchased) {
+            const checkboxes = $('.item-checkbox');
+            const promises = [];
+
+            checkboxes.prop('disabled', true);
+
+            checkboxes.each(function() {
+                const checkbox = $(this);
+                const itemId = checkbox.data('item-id');
+                const currentlyChecked = checkbox.prop('checked');
+                const shouldCheck = !setUnpurchased;
+
+                if (currentlyChecked !== shouldCheck) {
+                    const promise = $.post('@Url.Page("./Details", "TogglePurchased")', { 
+                        itemId: itemId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    });
+                    promises.push(promise);
+                }
+            });
+
+            if (promises.length > 0) {
+                Promise.all(promises).then(function() {
+                    location.reload();
+                }).catch(function() {
+                    alert('Failed to update some items. Please try again.');
+                }).finally(function() {
+                    checkboxes.prop('disabled', false);
+                });
+            } else {
+                checkboxes.prop('disabled', false);
+            }
+        }
+    </script>
+    
+    <form style="display: none;">
+        @Html.AntiForgeryToken()
+    </form>
+}
+
+<style>
+.card {
+    border-radius: 1rem !important;
+}
+
+.btn {
+    border-radius: 0.5rem;
+}
+
+.form-control {
+    border-radius: 0.5rem;
+}
+
+.form-check-input {
+    border-radius: 0.25rem;
+}
+
+.list-group-item {
+    border-radius: 0 !important;
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: var(--bs-gray-50) !important;
+}
+
+.sticky-lg-top {
+    position: sticky !important;
+}
+</style>

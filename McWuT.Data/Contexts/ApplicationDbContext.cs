@@ -14,6 +14,10 @@ namespace McWuT.Data.Contexts
 
         public DbSet<PasswordEntry> PasswordEntries { get; set; }
 
+        public DbSet<ShoppingList> ShoppingLists { get; set; }
+
+        public DbSet<ShoppingItem> ShoppingItems { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
