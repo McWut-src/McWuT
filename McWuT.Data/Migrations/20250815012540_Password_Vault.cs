@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -8,6 +7,13 @@ namespace McWuT.Data.Migrations
     /// <inheritdoc />
     public partial class Password_Vault : Migration
     {
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "PasswordEntries");
+        }
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -35,13 +41,6 @@ namespace McWuT.Data.Migrations
                 {
                     table.PrimaryKey("PK_PasswordEntries", x => x.Id);
                 });
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "PasswordEntries");
         }
     }
 }

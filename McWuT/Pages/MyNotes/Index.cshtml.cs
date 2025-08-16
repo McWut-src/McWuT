@@ -1,25 +1,16 @@
-using System.ComponentModel.DataAnnotations;
 using McWuT.Data.Models;
+using McWuT.Services.Notes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using McWuT.Data.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace McWuT.Web.Pages.MyNotes;
 
 [Authorize]
-public class IndexModel : PageModel
+public class IndexModel(INotesService notesService, UserManager<IdentityUser> userManager) : PageModel
 {
-    private readonly INotesService _notesService;
-    private readonly UserManager<IdentityUser> _userManager;
-
-    public IndexModel(INotesService notesService, UserManager<IdentityUser> userManager)
-    {
-        _notesService = notesService;
-        _userManager = userManager;
-    }
-
     public List<Note> Notes { get; set; } = [];
 
     [BindProperty(SupportsGet = true)]
@@ -29,6 +20,10 @@ public class IndexModel : PageModel
     public async Task OnGetAsync()
     {
         var userId = _userManager.GetUserId(User)!;
-        Notes = await _notesService.GetNotesAsync(userId, Query);
+        Notes = await _notesService.GetNotes(userId, Query);
     }
+
+    private readonly INotesService _notesService = notesService;
+
+    private readonly UserManager<IdentityUser> _userManager = userManager;
 }

@@ -1,42 +1,24 @@
-using System.ComponentModel.DataAnnotations;
+using McWuT.Services.Notes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using McWuT.Data.Services;
-using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace McWuT.Web.Pages.MyNotes;
 
 [Authorize]
-public class EditModel : PageModel
+public class EditModel(INotesService notesService, UserManager<IdentityUser> userManager) : PageModel
 {
-    private readonly INotesService _notesService;
-    private readonly UserManager<IdentityUser> _userManager;
-
-    public EditModel(INotesService notesService, UserManager<IdentityUser> userManager)
-    {
-        _notesService = notesService; _userManager = userManager;
-    }
-
     [BindProperty(SupportsGet = true)]
-    public int Id { get; set; }
-
-    public class InputModel
-    {
-        [StringLength(256)]
-        public string? Title { get; set; }
-        [StringLength(4000)]
-        public string? Content { get; set; }
-    }
+    public required string Id { get; set; }
 
     [BindProperty]
     public InputModel Input { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var userId = _userManager.GetUserId(User)!;
-        var note = await _notesService.GetByIdAsync(userId, Id);
+        var note = await _notesService.Get(Id);
         if (note == null) return NotFound();
 
         Input = new InputModel { Title = note.Title, Content = note.Content };
@@ -46,9 +28,21 @@ public class EditModel : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid) return Page();
-        var userId = _userManager.GetUserId(User)!;
-        var ok = await _notesService.UpdateAsync(userId, Id, Input.Title, Input.Content);
-        if (!ok) return NotFound();
+        var ok = await _notesService.Update(Id, Input.Title, Input.Content);
+        if (ok == null) return NotFound();
         return RedirectToPage("Index");
     }
+
+    public class InputModel
+    {
+        [StringLength(4000)]
+        public string? Content { get; set; }
+
+        [StringLength(256)]
+        public string? Title { get; set; }
+    }
+
+    private readonly INotesService _notesService = notesService;
+
+    private readonly UserManager<IdentityUser> _userManager = userManager;
 }

@@ -1,18 +1,15 @@
+using McWuT.Data.Models;
+using McWuT.Services.PasswordVault;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using McWuT.Data.Services;
-using McWuT.Data.Models;
 
 namespace McWuT.Web.Pages.PasswordVault
 {
     [Authorize]
     public class DeleteModel : PageModel
     {
-        private readonly IPasswordVaultService _passwordVaultService;
-        private readonly UserManager<IdentityUser> _userManager;
-
         public DeleteModel(IPasswordVaultService passwordVaultService, UserManager<IdentityUser> userManager)
         {
             _passwordVaultService = passwordVaultService;
@@ -47,5 +44,9 @@ namespace McWuT.Web.Pages.PasswordVault
             TempData["SuccessMessage"] = "Password entry deleted successfully!";
             return RedirectToPage("./Index");
         }
+
+        private readonly IPasswordVaultService _passwordVaultService;
+
+        private readonly UserManager<IdentityUser> _userManager;
     }
 }

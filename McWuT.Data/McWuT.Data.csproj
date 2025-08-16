@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\McWuT.Core\McWuT.Core.csproj" />
+    <ProjectReference Include="..\McWuT.Common\McWuT.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

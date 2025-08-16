@@ -1,6 +1,7 @@
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using McWuT.Web
 @using McWuT.Data.Models
-@using McWuT.Data.Services
 @namespace McWuT.Web.Pages.PasswordVault
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@attribute [Authorize]

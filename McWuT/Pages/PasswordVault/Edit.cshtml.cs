@@ -1,9 +1,9 @@
+using McWuT.Data.Models;
+using McWuT.Services.PasswordVault;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using McWuT.Data.Services;
-using McWuT.Data.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace McWuT.Web.Pages.PasswordVault
@@ -11,48 +11,16 @@ namespace McWuT.Web.Pages.PasswordVault
     [Authorize]
     public class EditModel : PageModel
     {
-        private readonly IPasswordVaultService _passwordVaultService;
-        private readonly UserManager<IdentityUser> _userManager;
-
         public EditModel(IPasswordVaultService passwordVaultService, UserManager<IdentityUser> userManager)
         {
             _passwordVaultService = passwordVaultService;
             _userManager = userManager;
         }
 
-        [BindProperty]
-        public InputModel Input { get; set; } = new();
-
         public PasswordEntry? Entry { get; set; }
 
-        public class InputModel
-        {
-            [Required]
-            [MaxLength(256)]
-            [Display(Name = "Entry Name")]
-            public string Name { get; set; } = string.Empty;
-
-            [MaxLength(256)]
-            [Display(Name = "Website")]
-            public string? Website { get; set; }
-
-            [MaxLength(256)]
-            [Display(Name = "Username")]
-            public string? Username { get; set; }
-
-            [DataType(DataType.Password)]
-            [Display(Name = "New Password")]
-            public string? Password { get; set; }
-
-            [MaxLength(1000)]
-            [Display(Name = "Notes")]
-            [DataType(DataType.MultilineText)]
-            public string? Notes { get; set; }
-
-            [MaxLength(100)]
-            [Display(Name = "Category")]
-            public string? Category { get; set; }
-        }
+        [BindProperty]
+        public InputModel Input { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(Guid id)
         {
@@ -122,5 +90,38 @@ namespace McWuT.Web.Pages.PasswordVault
             var decryptedPassword = _passwordVaultService.DecryptPassword(entry.EncryptedPassword);
             return new JsonResult(new { password = decryptedPassword });
         }
+
+        public class InputModel
+        {
+            [MaxLength(100)]
+            [Display(Name = "Category")]
+            public string? Category { get; set; }
+
+            [Required]
+            [MaxLength(256)]
+            [Display(Name = "Entry Name")]
+            public string Name { get; set; } = string.Empty;
+
+            [MaxLength(1000)]
+            [Display(Name = "Notes")]
+            [DataType(DataType.MultilineText)]
+            public string? Notes { get; set; }
+
+            [DataType(DataType.Password)]
+            [Display(Name = "New Password")]
+            public string? Password { get; set; }
+
+            [MaxLength(256)]
+            [Display(Name = "Username")]
+            public string? Username { get; set; }
+
+            [MaxLength(256)]
+            [Display(Name = "Website")]
+            public string? Website { get; set; }
+        }
+
+        private readonly IPasswordVaultService _passwordVaultService;
+
+        private readonly UserManager<IdentityUser> _userManager;
     }
 }

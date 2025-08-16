@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using McWuT.Data.Contexts;
-using McWuT.Data.Services;
+using McWuT.Services.Notes;
+using McWuT.Services;
+using McWuT.Data.Repositories.Base;
+using McWuT.Services.PasswordVault;
 
 namespace McWuT.Web
 {
@@ -11,15 +14,16 @@ namespace McWuT.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.   
+            // Add services to the container.
             builder.Services.AddRazorPages();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                  options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddScoped(typeof(EntityService<>));
             builder.Services.AddScoped<INotesService, NotesService>();
             builder.Services.AddScoped<IPasswordVaultService, PasswordVaultService>();
+            builder.Services.AddScoped(typeof(IEntityRepository<>), typeof(EntityRepository<>));
+            builder.Services.AddScoped(typeof(IUserEntityRepository<>), typeof(UserEntityRepository<>));
 
             // Add Data Protection
             //builder.Services.AddDataProtection();
@@ -30,13 +34,15 @@ namespace McWuT.Web
 
             builder.Configuration["ConnectionStrings:DefaultConnection"] = "Server=localhost;Database=mydb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
 
-
-            var app = builder.Build();
+      
+        
+                var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
+
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }

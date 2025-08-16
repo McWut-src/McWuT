@@ -1,16 +1,17 @@
 using McWuT.Core;
+using McWuT.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using McWuT.Data.Models;
 
 namespace McWuT.Data.Contexts
 {
-    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
                : IdentityDbContext<IdentityUser>(options)
     {
         public DbSet<Note> Notes { get; set; }
+
         public DbSet<PasswordEntry> PasswordEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -35,7 +36,5 @@ namespace McWuT.Data.Contexts
         {
             builder.Entity<TEntity>().HasQueryFilter(e => e.DeletedDate == null);
         }
-
-
     }
 }

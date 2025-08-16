@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\McWuT.Common\McWuT.Common.csproj" />
+    <ProjectReference Include="..\McWuT.Data\McWuT.Data.csproj" />
+  </ItemGroup>
+
 </Project>
