@@ -1,0 +1,805 @@
+@page
+@model McWuT.Web.Pages.Tools.TextDiffModel
+@{
+    ViewData["Title"] = "Text Diff";
+}
+
+<div class="container py-4" id="diff-root">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0"><i class="bi bi-git-branch me-2"></i>Text Diff</h2>
+        <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#helpModal">
+            <i class="bi bi-question-circle me-1"></i>Help
+        </button>
+    </div>
+
+    <div id="alertContainer" class="d-none">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span id="alertMessage">Ready to compare texts</span>
+            <button type="button" class="btn-close" aria-label="Close" onclick="hideAlert()"></button>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Comparison Settings</h6>
+        </div>
+        <div class="card-body py-2">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="ignoreWhitespaceSwitch" checked>
+                        <label class="form-check-label" for="ignoreWhitespaceSwitch">
+                            Ignore Whitespace
+                        </label>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="ignoreCaseSwitch">
+                        <label class="form-check-label" for="ignoreCaseSwitch">
+                            Ignore Case
+                        </label>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <select class="form-select form-select-sm" id="viewModeSelect" style="width: auto;">
+                        <option value="split">Split View</option>
+                        <option value="unified">Unified View</option>
+                    </select>
+                </div>
+                <div class="col-auto ms-auto">
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" type="button" id="compareBtn" title="Compare texts (Ctrl+Enter)">
+                            <i class="bi bi-lightning me-1"></i>Compare
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="clearAllBtn" title="Clear all content (Ctrl+D)">
+                            <i class="bi bi-x-circle me-1"></i>Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Areas -->
+    <div class="row g-3 mb-4" id="inputRow">
+        <!-- Original Text Pane -->
+        <div class="col-12 col-lg-6" id="originalPane">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-file-text me-2"></i>Original Text</strong>
+                    <div class="btn-group">
+                        <input type="file" id="uploadOriginalFile" class="d-none" accept=".txt,.md,.json,.xml,.css,.js,.html,.cs,.py,.java">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="uploadOriginalBtn" title="Upload file">
+                            <i class="bi bi-upload"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="copyOriginalBtn" title="Copy to clipboard">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="clearOriginalBtn" title="Clear">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <textarea id="originalInput" class="form-control border-0 rounded-0" 
+                              placeholder="Paste or type original text here..." 
+                              spellcheck="false" rows="20"></textarea>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        Lines: <span id="originalLineCount">0</span> | 
+                        Characters: <span id="originalCharCount">0</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modified Text Pane -->
+        <div class="col-12 col-lg-6" id="modifiedPane">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-file-text-fill me-2"></i>Modified Text</strong>
+                    <div class="btn-group">
+                        <input type="file" id="uploadModifiedFile" class="d-none" accept=".txt,.md,.json,.xml,.css,.js,.html,.cs,.py,.java">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="uploadModifiedBtn" title="Upload file">
+                            <i class="bi bi-upload"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="copyModifiedBtn" title="Copy to clipboard">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="clearModifiedBtn" title="Clear">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <textarea id="modifiedInput" class="form-control border-0 rounded-0" 
+                              placeholder="Paste or type modified text here..." 
+                              spellcheck="false" rows="20"></textarea>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        Lines: <span id="modifiedLineCount">0</span> | 
+                        Characters: <span id="modifiedCharCount">0</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Panel -->
+    <div id="resultsContainer" class="d-none">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>Comparison Results
+                    <span id="diffStats" class="badge bg-secondary ms-2"></span>
+                </h6>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" id="downloadDiffBtn" title="Download diff as .txt">
+                        <i class="bi bi-download"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" id="copyDiffBtn" title="Copy diff to clipboard">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" id="toggleLineNumbersBtn" title="Toggle line numbers">
+                        <i class="bi bi-list-ol"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <!-- Split View -->
+                <div id="splitView" class="d-none">
+                    <div class="row g-0">
+                        <div class="col-6">
+                            <div class="diff-header bg-danger-subtle text-danger-emphasis px-3 py-2 border-end">
+                                <i class="bi bi-dash-circle me-2"></i>Original
+                            </div>
+                            <pre id="originalDiff" class="diff-content border-end"></pre>
+                        </div>
+                        <div class="col-6">
+                            <div class="diff-header bg-success-subtle text-success-emphasis px-3 py-2">
+                                <i class="bi bi-plus-circle me-2"></i>Modified
+                            </div>
+                            <pre id="modifiedDiff" class="diff-content"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unified View -->
+                <div id="unifiedView" class="d-none">
+                    <pre id="unifiedDiff" class="diff-content"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diff Legend -->
+        <div class="mt-3">
+            <div class="d-flex justify-content-center gap-4 flex-wrap">
+                <small class="diff-legend">
+                    <span class="diff-added-inline px-2">+ Added</span>
+                </small>
+                <small class="diff-legend">
+                    <span class="diff-removed-inline px-2">- Removed</span>
+                </small>
+                <small class="diff-legend">
+                    <span class="diff-modified-inline px-2">~ Modified</span>
+                </small>
+                <small class="diff-legend">
+                    <span class="diff-context-inline px-2">Context</span>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="helpModalLabel">
+                    <i class="bi bi-question-circle me-2"></i>Text Diff Help
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6><i class="bi bi-keyboard me-2"></i>Keyboard Shortcuts</h6>
+                <ul class="list-unstyled">
+                    <li><kbd>Ctrl</kbd> + <kbd>Enter</kbd> - Compare texts</li>
+                    <li><kbd>Ctrl</kbd> + <kbd>D</kbd> - Clear all content</li>
+                    <li><kbd>Ctrl</kbd> + <kbd>S</kbd> - Download diff file</li>
+                </ul>
+
+                <h6 class="mt-4"><i class="bi bi-gear me-2"></i>Features</h6>
+                <ul>
+                    <li><strong>Split View:</strong> Shows original and modified texts side by side</li>
+                    <li><strong>Unified View:</strong> Shows changes in a single column with +/- prefixes</li>
+                    <li><strong>File Upload:</strong> Load text files directly for comparison</li>
+                    <li><strong>Settings:</strong> Ignore whitespace or case differences</li>
+                    <li><strong>Export:</strong> Download diff results as a text file</li>
+                </ul>
+
+                <h6 class="mt-4"><i class="bi bi-palette me-2"></i>Color Legend</h6>
+                <div class="d-flex gap-3 flex-wrap">
+                    <small><span class="badge bg-success">+ Added</span></small>
+                    <small><span class="badge bg-danger">- Removed</span></small>
+                    <small><span class="badge bg-secondary">Context</span></small>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    <strong>Tip:</strong> This tool works great with code files, configuration files, and any text content you need to compare!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(() => {
+    // Elements
+    const originalInput = document.getElementById('originalInput');
+    const modifiedInput = document.getElementById('modifiedInput');
+    const originalLineCount = document.getElementById('originalLineCount');
+    const originalCharCount = document.getElementById('originalCharCount');
+    const modifiedLineCount = document.getElementById('modifiedLineCount');
+    const modifiedCharCount = document.getElementById('modifiedCharCount');
+    const alertContainer = document.getElementById('alertContainer');
+    const alertMessage = document.getElementById('alertMessage');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const splitView = document.getElementById('splitView');
+    const unifiedView = document.getElementById('unifiedView');
+    const originalDiff = document.getElementById('originalDiff');
+    const modifiedDiff = document.getElementById('modifiedDiff');
+    const unifiedDiff = document.getElementById('unifiedDiff');
+    const diffStats = document.getElementById('diffStats');
+
+    let showLineNumbers = true;
+    let currentDiffResult = null;
+
+    // Utility functions
+    function showAlert(message, type = 'warning') {
+        alertMessage.textContent = message;
+        alertContainer.className = `alert alert-${type} alert-dismissible fade show`;
+        alertContainer.classList.remove('d-none');
+    }
+
+    window.hideAlert = function() {
+        alertContainer.classList.add('d-none');
+    }
+
+    function updateStats(textarea, lineCountEl, charCountEl) {
+        const text = textarea.value;
+        const lines = text ? text.split('\n').length : 0;
+        const chars = text.length;
+        lineCountEl.textContent = lines;
+        charCountEl.textContent = chars;
+    }
+
+    // Simple diff algorithm (Myers' algorithm inspired)
+    function computeDiff(original, modified, options = {}) {
+        const originalLines = original.split('\n');
+        const modifiedLines = modified.split('\n');
+        
+        const prepLine = (line) => {
+            let processed = line;
+            if (options.ignoreWhitespace) {
+                processed = processed.trim();
+            }
+            if (options.ignoreCase) {
+                processed = processed.toLowerCase();
+            }
+            return processed;
+        };
+
+        // Create a simple diff using longest common subsequence
+        const lcs = [];
+        const dp = Array(originalLines.length + 1).fill().map(() => 
+            Array(modifiedLines.length + 1).fill(0)
+        );
+
+        // Fill the dp table
+        for (let i = 1; i <= originalLines.length; i++) {
+            for (let j = 1; j <= modifiedLines.length; j++) {
+                if (prepLine(originalLines[i - 1]) === prepLine(modifiedLines[j - 1])) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+
+        // Backtrack to find the actual diff
+        const diff = [];
+        let i = originalLines.length;
+        let j = modifiedLines.length;
+
+        while (i > 0 || j > 0) {
+            if (i > 0 && j > 0 && prepLine(originalLines[i - 1]) === prepLine(modifiedLines[j - 1])) {
+                diff.unshift({ type: 'context', original: originalLines[i - 1], modified: modifiedLines[j - 1], originalLine: i, modifiedLine: j });
+                i--;
+                j--;
+            } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                diff.unshift({ type: 'added', modified: modifiedLines[j - 1], modifiedLine: j });
+                j--;
+            } else if (i > 0) {
+                diff.unshift({ type: 'removed', original: originalLines[i - 1], originalLine: i });
+                i--;
+            }
+        }
+
+        return diff;
+    }
+
+    function htmlEscape(str) {
+        return str.replace(/[&<>"']/g, function(m) {
+            switch (m) {
+                case '&': return '&amp;';
+                case '<': return '&lt;';
+                case '>': return '&gt;';
+                case '"': return '&quot;';
+                case "'": return '&#39;';
+                default: return m;
+            }
+        });
+    }
+
+    function renderSplitView(diff) {
+        let originalHtml = '';
+        let modifiedHtml = '';
+        let originalLineNum = 1;
+        let modifiedLineNum = 1;
+
+        diff.forEach(change => {
+            const lineNumPrefix = showLineNumbers ? 
+                `<span class="line-number">${String(originalLineNum).padStart(4)} </span>` : '';
+            const modLineNumPrefix = showLineNumbers ? 
+                `<span class="line-number">${String(modifiedLineNum).padStart(4)} </span>` : '';
+
+            switch (change.type) {
+                case 'context':
+                    originalHtml += `<div class="diff-line diff-context">${lineNumPrefix}${htmlEscape(change.original)}</div>\n`;
+                    modifiedHtml += `<div class="diff-line diff-context">${modLineNumPrefix}${htmlEscape(change.modified)}</div>\n`;
+                    originalLineNum++;
+                    modifiedLineNum++;
+                    break;
+                case 'removed':
+                    originalHtml += `<div class="diff-line diff-removed">${lineNumPrefix}${htmlEscape(change.original)}</div>\n`;
+                    modifiedHtml += `<div class="diff-line diff-empty">${showLineNumbers ? '<span class="line-number">     </span>' : ''}</div>\n`;
+                    originalLineNum++;
+                    break;
+                case 'added':
+                    originalHtml += `<div class="diff-line diff-empty">${showLineNumbers ? '<span class="line-number">     </span>' : ''}</div>\n`;
+                    modifiedHtml += `<div class="diff-line diff-added">${modLineNumPrefix}${htmlEscape(change.modified)}</div>\n`;
+                    modifiedLineNum++;
+                    break;
+            }
+        });
+
+        originalDiff.innerHTML = originalHtml;
+        modifiedDiff.innerHTML = modifiedHtml;
+    }
+
+    function renderUnifiedView(diff) {
+        let html = '';
+        let contextCount = 0;
+        
+        diff.forEach(change => {
+            switch (change.type) {
+                case 'context':
+                    html += `<div class="diff-line diff-context"> ${htmlEscape(change.original)}</div>\n`;
+                    contextCount++;
+                    break;
+                case 'removed':
+                    html += `<div class="diff-line diff-removed">-${htmlEscape(change.original)}</div>\n`;
+                    break;
+                case 'added':
+                    html += `<div class="diff-line diff-added">+${htmlEscape(change.modified)}</div>\n`;
+                    break;
+            }
+        });
+
+        unifiedDiff.innerHTML = html;
+    }
+
+    function performDiff() {
+        const originalText = originalInput.value;
+        const modifiedText = modifiedInput.value;
+
+        if (!originalText && !modifiedText) {
+            showAlert('Please enter text in both fields to compare', 'warning');
+            return;
+        }
+
+        const options = {
+            ignoreWhitespace: document.getElementById('ignoreWhitespaceSwitch').checked,
+            ignoreCase: document.getElementById('ignoreCaseSwitch').checked
+        };
+
+        try {
+            currentDiffResult = computeDiff(originalText, modifiedText, options);
+            
+            const stats = {
+                added: currentDiffResult.filter(d => d.type === 'added').length,
+                removed: currentDiffResult.filter(d => d.type === 'removed').length,
+                context: currentDiffResult.filter(d => d.type === 'context').length
+            };
+
+            diffStats.textContent = `+${stats.added} -${stats.removed} ~${stats.context}`;
+            
+            const viewMode = document.getElementById('viewModeSelect').value;
+            
+            if (viewMode === 'split') {
+                renderSplitView(currentDiffResult);
+                splitView.classList.remove('d-none');
+                unifiedView.classList.add('d-none');
+            } else {
+                renderUnifiedView(currentDiffResult);
+                unifiedView.classList.remove('d-none');
+                splitView.classList.add('d-none');
+            }
+
+            resultsContainer.classList.remove('d-none');
+            hideAlert();
+            
+            if (stats.added === 0 && stats.removed === 0) {
+                showAlert('No differences found between the texts', 'success');
+            } else {
+                showAlert(`Found ${stats.added + stats.removed} differences`, 'info');
+            }
+        } catch (error) {
+            showAlert('Error performing comparison: ' + error.message, 'danger');
+        }
+    }
+
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showAlert('Copied to clipboard', 'success');
+        } catch {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showAlert('Copied to clipboard', 'success');
+            } catch {
+                showAlert('Failed to copy to clipboard', 'danger');
+            } finally {
+                document.body.removeChild(ta);
+            }
+        }
+    }
+
+    function downloadFile(content, filename) {
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function generateDiffText() {
+        if (!currentDiffResult) return '';
+        
+        let diffText = `--- Original\n+++ Modified\n`;
+        currentDiffResult.forEach(change => {
+            switch (change.type) {
+                case 'context':
+                    diffText += ` ${change.original}\n`;
+                    break;
+                case 'removed':
+                    diffText += `-${change.original}\n`;
+                    break;
+                case 'added':
+                    diffText += `+${change.modified}\n`;
+                    break;
+            }
+        });
+        return diffText;
+    }
+
+    function handleFileUpload(input, textarea) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                textarea.value = e.target.result;
+                updateStats(textarea, 
+                    textarea === originalInput ? originalLineCount : modifiedLineCount,
+                    textarea === originalInput ? originalCharCount : modifiedCharCount
+                );
+                showAlert(`File "${file.name}" loaded successfully`, 'success');
+            };
+            reader.onerror = function() {
+                showAlert('Error reading file', 'danger');
+            };
+            reader.readAsText(file);
+        }
+    }
+
+    // Event listeners
+    originalInput.addEventListener('input', () => updateStats(originalInput, originalLineCount, originalCharCount));
+    modifiedInput.addEventListener('input', () => updateStats(modifiedInput, modifiedLineCount, modifiedCharCount));
+
+    document.getElementById('compareBtn').addEventListener('click', performDiff);
+
+    document.getElementById('clearAllBtn').addEventListener('click', () => {
+        originalInput.value = '';
+        modifiedInput.value = '';
+        updateStats(originalInput, originalLineCount, originalCharCount);
+        updateStats(modifiedInput, modifiedLineCount, modifiedCharCount);
+        resultsContainer.classList.add('d-none');
+        currentDiffResult = null;
+        hideAlert();
+    });
+
+    document.getElementById('viewModeSelect').addEventListener('change', () => {
+        if (currentDiffResult) {
+            performDiff();
+        }
+    });
+
+    // File upload handlers
+    document.getElementById('uploadOriginalBtn').addEventListener('click', () => {
+        document.getElementById('uploadOriginalFile').click();
+    });
+    document.getElementById('uploadModifiedBtn').addEventListener('click', () => {
+        document.getElementById('uploadModifiedFile').click();
+    });
+
+    document.getElementById('uploadOriginalFile').addEventListener('change', function() {
+        handleFileUpload(this, originalInput);
+    });
+    document.getElementById('uploadModifiedFile').addEventListener('change', function() {
+        handleFileUpload(this, modifiedInput);
+    });
+
+    // Copy buttons
+    document.getElementById('copyOriginalBtn').addEventListener('click', () => copyToClipboard(originalInput.value));
+    document.getElementById('copyModifiedBtn').addEventListener('click', () => copyToClipboard(modifiedInput.value));
+    document.getElementById('copyDiffBtn').addEventListener('click', () => copyToClipboard(generateDiffText()));
+
+    // Clear buttons
+    document.getElementById('clearOriginalBtn').addEventListener('click', () => {
+        originalInput.value = '';
+        updateStats(originalInput, originalLineCount, originalCharCount);
+    });
+    document.getElementById('clearModifiedBtn').addEventListener('click', () => {
+        modifiedInput.value = '';
+        updateStats(modifiedInput, modifiedLineCount, modifiedCharCount);
+    });
+
+    // Download diff
+    document.getElementById('downloadDiffBtn').addEventListener('click', () => {
+        const diffText = generateDiffText();
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        downloadFile(diffText, `diff-${timestamp}.txt`);
+    });
+
+    // Toggle line numbers
+    document.getElementById('toggleLineNumbersBtn').addEventListener('click', () => {
+        showLineNumbers = !showLineNumbers;
+        if (currentDiffResult) {
+            const viewMode = document.getElementById('viewModeSelect').value;
+            if (viewMode === 'split') {
+                renderSplitView(currentDiffResult);
+            }
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            performDiff();
+        } else if (e.ctrlKey && e.key === 'd') {
+            e.preventDefault();
+            document.getElementById('clearAllBtn').click();
+        } else if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            document.getElementById('downloadDiffBtn').click();
+        }
+    });
+
+    // Initialize stats
+    updateStats(originalInput, originalLineCount, originalCharCount);
+    updateStats(modifiedInput, modifiedLineCount, modifiedCharCount);
+
+    // Show helpful hint
+    setTimeout(() => {
+        showAlert('Tip: Use Ctrl+Enter to compare, Ctrl+D to clear all, Ctrl+S to download diff', 'info');
+        setTimeout(hideAlert, 5000);
+    }, 1000);
+
+    // Add sample data for demonstration (only if both textareas are empty)
+    if (!originalInput.value && !modifiedInput.value) {
+        setTimeout(() => {
+            originalInput.value = `function calculateTotal(items) {
+    let total = 0;
+    for (let item of items) {
+        total += item.price;
+    }
+    return total;
+}
+
+const data = {
+    name: "John Doe",
+    age: 30,
+    city: "New York"
+};`;
+
+            modifiedInput.value = `function calculateTotal(items) {
+    let total = 0;
+    for (let item of items) {
+        total += item.price * item.quantity;
+    }
+    return total;
+}
+
+const data = {
+    name: "Jane Doe",
+    age: 25,
+    city: "San Francisco",
+    country: "USA"
+};`;
+
+            updateStats(originalInput, originalLineCount, originalCharCount);
+            updateStats(modifiedInput, modifiedLineCount, modifiedCharCount);
+        }, 2000);
+    }
+})();
+</script>
+
+<style>
+    /* Scoped styling */
+    #diff-root .card { 
+        transition: background-color .2s ease; 
+    }
+
+    #diff-root textarea {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 0.875rem;
+        line-height: 1.4;
+        resize: vertical;
+    }
+
+    #diff-root .diff-content {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 0.875rem;
+        line-height: 1.4;
+        margin: 0;
+        padding: 1rem;
+        max-height: 500px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    #diff-root .diff-line {
+        margin: 0;
+        padding: 0.1rem 0;
+        border-left: 3px solid transparent;
+    }
+
+    #diff-root .diff-context {
+        background-color: var(--bs-body-bg);
+        border-left-color: #6c757d;
+    }
+
+    #diff-root .diff-added {
+        background-color: rgba(40, 167, 69, 0.1);
+        border-left-color: #28a745;
+    }
+
+    #diff-root .diff-removed {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left-color: #dc3545;
+    }
+
+    #diff-root .diff-empty {
+        background-color: rgba(108, 117, 125, 0.05);
+        border-left-color: transparent;
+    }
+
+    #diff-root .line-number {
+        color: #6c757d;
+        margin-right: 0.5rem;
+        user-select: none;
+    }
+
+    #diff-root .diff-header {
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    #diff-root .diff-legend {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    }
+
+    #diff-root .diff-added-inline {
+        background-color: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.3);
+        border-radius: 0.25rem;
+    }
+
+    #diff-root .diff-removed-inline {
+        background-color: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 0.25rem;
+    }
+
+    #diff-root .diff-modified-inline {
+        background-color: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        border-radius: 0.25rem;
+    }
+
+    #diff-root .diff-context-inline {
+        background-color: rgba(108, 117, 125, 0.1);
+        border: 1px solid rgba(108, 117, 125, 0.3);
+        border-radius: 0.25rem;
+    }
+
+    /* Dark theme adjustments */
+    [data-bs-theme="dark"] #diff-root .diff-added {
+        background-color: rgba(40, 167, 69, 0.15);
+    }
+
+    [data-bs-theme="dark"] #diff-root .diff-removed {
+        background-color: rgba(220, 53, 69, 0.15);
+    }
+
+    [data-bs-theme="dark"] #diff-root .diff-context {
+        background-color: var(--bs-body-bg);
+    }
+
+    [data-bs-theme="dark"] #diff-root .diff-empty {
+        background-color: rgba(108, 117, 125, 0.08);
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 991.98px) {
+        #diff-root .diff-content {
+            max-height: 300px;
+        }
+        
+        #diff-root textarea {
+            min-height: 200px;
+        }
+    }
+
+    /* Scroll synchronization for split view */
+    #diff-root .diff-content::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    #diff-root .diff-content::-webkit-scrollbar-track {
+        background: var(--bs-tertiary-bg);
+        border-radius: 4px;
+    }
+
+    #diff-root .diff-content::-webkit-scrollbar-thumb {
+        background: var(--bs-secondary);
+        border-radius: 4px;
+    }
+
+    #diff-root .diff-content::-webkit-scrollbar-thumb:hover {
+        background: var(--bs-secondary-color);
+    }
+</style>
+}
