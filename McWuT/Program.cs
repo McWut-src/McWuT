@@ -6,6 +6,7 @@ using McWuT.Services;
 using McWuT.Data.Repositories.Base;
 using McWuT.Services.PasswordVault;
 using McWuT.Services.Shopping;
+using McWuT.Common.Converters;
 
 namespace McWuT.Web
 {
@@ -27,6 +28,9 @@ namespace McWuT.Web
             builder.Services.AddScoped<IShoppingItemService, ShoppingItemService>();
             builder.Services.AddScoped(typeof(IEntityRepository<>), typeof(EntityRepository<>));
             builder.Services.AddScoped(typeof(IUserEntityRepository<>), typeof(UserEntityRepository<>));
+
+            // Converters
+            builder.Services.AddSingleton<IJsonCSharpConversionService, JsonCSharpConversionService>();
 
             // Add Data Protection
             //builder.Services.AddDataProtection();

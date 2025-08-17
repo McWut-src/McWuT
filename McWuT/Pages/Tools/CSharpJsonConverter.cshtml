@@ -1,0 +1,131 @@
+@page
+@model McWuT.Web.Pages.Tools.CSharpJsonConverterModel
+@{
+    ViewData["Title"] = "C# ? JSON Converter";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" />
+<link rel="stylesheet" href="~/css/CSharpJsonConverter.css" asp-append-version="true" />
+
+<div id="csjson-data" class="d-none" data-output="@Model.Output" data-error="@Model.Error" data-types="@string.Join('|', Model.TypeNames ?? Array.Empty<string>())"></div>
+
+<!-- Hidden form used only to emit an anti-forgery token for AJAX requests -->
+<form id="__af" method="post" class="d-none">@Html.AntiForgeryToken()</form>
+
+<div class="container py-4" id="csjson-root">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h2 class="mb-0"><i class="bi bi-code-slash me-2"></i>C# ? JSON Converter</h2>
+        <div class="d-flex align-items-center gap-2">
+            <span id="detectedBadge" class="badge text-bg-secondary d-none">Detected: JSON</span>
+            <button class="btn btn-outline-secondary btn-sm" id="discoverBtn" title="Discover types in C# input">
+                <i class="bi bi-search me-1"></i>Discover Types
+            </button>
+            <select id="typePicker" class="form-select form-select-sm w-auto d-none"></select>
+            <button class="btn btn-primary btn-sm" id="convertBtn" disabled>
+                <span class="btn-text"><i class="bi bi-arrow-right-circle me-1"></i>Convert</span>
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body d-flex flex-wrap align-items-center gap-3">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="optJsonProp" checked>
+                <label class="form-check-label" for="optJsonProp">Include [JsonPropertyName]</label>
+            </div>
+            <div class="input-group input-group-sm" style="max-width:320px;">
+                <span class="input-group-text"><i class="bi bi-braces"></i></span>
+                <input type="text" class="form-control" id="optRootName" placeholder="Root class name" value="Root">
+            </div>
+            <div class="input-group input-group-sm" style="max-width:320px;">
+                <span class="input-group-text"><i class="bi bi-box"></i></span>
+                <input type="text" class="form-control" id="optNamespace" placeholder="Namespace (optional)">
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="optFileScoped">
+                <label class="form-check-label" for="optFileScoped">File-scoped namespace</label>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="optNullable" checked>
+                <label class="form-check-label" for="optNullable">#nullable enable</label>
+            </div>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Format">
+                <button type="button" class="btn btn-outline-secondary" id="minifyBtn" title="Minify output"><i class="bi bi-file-earmark-code"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertContainer" class="d-none">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span id="alertMessage">Invalid input</span>
+            <button type="button" class="btn-close" aria-label="Close" onclick="window.CSJC.hideAlert()"></button>
+        </div>
+    </div>
+
+    <div class="row g-3 align-items-stretch" id="panesRow">
+        <!-- Input Pane -->
+        <div class="col-12 col-lg-6" id="inputPane">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong id="inputTitle"><i class="bi bi-input-cursor-text me-2"></i>Input</strong>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="copyInputBtn" title="Copy to clipboard">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="downloadInputBtn" title="Download">
+                            <i class="bi bi-download"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="maximizeInputBtn" title="Maximize">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <textarea id="inputArea" class="form-control flex-grow-1" spellcheck="false" rows="18" placeholder="Paste JSON or C# class here..."></textarea>
+                    <div class="form-text text-danger mt-2 d-none" id="inputValidation"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Output Pane -->
+        <div class="col-12 col-lg-6" id="outputPane">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong id="outputTitle"><i class="bi bi-box-arrow-up-right me-2"></i>Output</strong>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="copyOutputBtn" title="Copy to clipboard">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="downloadOutputBtn" title="Download">
+                            <i class="bi bi-download"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="maximizeOutputBtn" title="Maximize">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <pre class="flex-grow-1 mb-0 rounded p-3 overflow-auto"><code id="outputCode" class="language-csharp"></code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+        <div id="copyToast" class="toast align-items-center text-bg-primary border-0" role="status" aria-live="polite" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Copied!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+<script src="~/js/CSharpJsonConverter.js" asp-append-version="true"></script>

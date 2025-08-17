@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\McWuT.Data\McWuT.Data.csproj" />
     <ProjectReference Include="..\McWuT.Services\McWuT.Services.csproj" />
+    <ProjectReference Include="..\McWuT.Common\McWuT.Common.csproj" />
   </ItemGroup>
 
 </Project>
