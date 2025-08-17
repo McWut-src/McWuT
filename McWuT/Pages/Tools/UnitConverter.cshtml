@@ -1,0 +1,567 @@
+@page
+@model McWuT.Web.Pages.Tools.UnitConverterModel
+@{
+    ViewData["Title"] = "Unit Converter";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="bi bi-arrows-expand me-2 text-primary"></i>Unit Converter</h2>
+        <div class="text-muted">
+            <small><i class="bi bi-info-circle me-1"></i>Type values in any field for instant conversion</small>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Length Conversion -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-rulers me-2"></i>Length</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Meters</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="meters" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('meters')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Feet</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="feet" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('feet')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Inches</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="inches" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('inches')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Centimeters</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="centimeters" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('centimeters')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kilometers</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="kilometers" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('kilometers')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Miles</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="miles" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('miles')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="clearSection('length')">
+                        <i class="bi bi-x-circle me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weight Conversion -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-scale me-2"></i>Weight</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kilograms</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="kilograms" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('kilograms')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Pounds</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="pounds" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('pounds')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ounces</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="ounces" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('ounces')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Grams</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="grams" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('grams')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="clearSection('weight')">
+                        <i class="bi bi-x-circle me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Volume Conversion -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-cup me-2"></i>Volume</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Liters</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="liters" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('liters')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Gallons (US)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="gallons" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('gallons')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Milliliters</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="milliliters" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('milliliters')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Fluid Ounces (US)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="fluidounces" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('fluidounces')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="clearSection('volume')">
+                        <i class="bi bi-x-circle me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Temperature Conversion -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-thermometer me-2"></i>Temperature</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Celsius (°C)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="celsius" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('celsius')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Fahrenheit (°F)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="fahrenheit" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('fahrenheit')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kelvin (K)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="kelvin" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('kelvin')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="clearSection('temperature')">
+                        <i class="bi bi-x-circle me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Speed Conversion -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Speed</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kilometers per Hour</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="kmh" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('kmh')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Miles per Hour</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="mph" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('mph')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Meters per Second</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="ms" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('ms')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="clearSection('speed')">
+                        <i class="bi bi-x-circle me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Area Conversion -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-grid me-2"></i>Area</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Square Meters</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="squaremeters" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('squaremeters')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Square Feet</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="squarefeet" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('squarefeet')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Hectares</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="hectares" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('hectares')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Acres</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="acres" placeholder="0" step="any">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyToClipboard('acres')" title="Copy">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="clearSection('area')">
+                        <i class="bi bi-x-circle me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear All Button -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <button class="btn btn-outline-dark btn-lg" onclick="clearAll()">
+                <i class="bi bi-trash me-2"></i>Clear All Conversions
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Conversion factors to base units
+        const conversions = {
+            // Length conversions (base: meters)
+            length: {
+                meters: 1,
+                feet: 3.28084,
+                inches: 39.3701,
+                centimeters: 100,
+                kilometers: 0.001,
+                miles: 0.000621371
+            },
+            // Weight conversions (base: kilograms)
+            weight: {
+                kilograms: 1,
+                pounds: 2.20462,
+                ounces: 35.274,
+                grams: 1000
+            },
+            // Volume conversions (base: liters)
+            volume: {
+                liters: 1,
+                gallons: 0.264172,
+                milliliters: 1000,
+                fluidounces: 33.814
+            },
+            // Speed conversions (base: km/h)
+            speed: {
+                kmh: 1,
+                mph: 0.621371,
+                ms: 0.277778
+            },
+            // Area conversions (base: square meters)
+            area: {
+                squaremeters: 1,
+                squarefeet: 10.7639,
+                hectares: 0.0001,
+                acres: 0.000247105
+            }
+        };
+
+        // Temperature conversions (special handling)
+        function convertTemperature(value, fromUnit, toUnit) {
+            if (isNaN(value) || value === '') return '';
+            
+            let celsius;
+            
+            // Convert to Celsius first
+            switch (fromUnit) {
+                case 'celsius':
+                    celsius = parseFloat(value);
+                    break;
+                case 'fahrenheit':
+                    celsius = (parseFloat(value) - 32) * 5/9;
+                    break;
+                case 'kelvin':
+                    celsius = parseFloat(value) - 273.15;
+                    break;
+            }
+            
+            // Convert from Celsius to target unit
+            switch (toUnit) {
+                case 'celsius':
+                    return celsius;
+                case 'fahrenheit':
+                    return celsius * 9/5 + 32;
+                case 'kelvin':
+                    return celsius + 273.15;
+            }
+        }
+
+        function convert(category, fromUnit, value) {
+            if (isNaN(value) || value === '') {
+                // Clear all fields in this category
+                Object.keys(conversions[category]).forEach(unit => {
+                    if (unit !== fromUnit) {
+                        document.getElementById(unit).value = '';
+                    }
+                });
+                return;
+            }
+
+            const baseValue = parseFloat(value) / conversions[category][fromUnit];
+            
+            Object.keys(conversions[category]).forEach(unit => {
+                if (unit !== fromUnit) {
+                    const convertedValue = baseValue * conversions[category][unit];
+                    document.getElementById(unit).value = convertedValue.toFixed(6).replace(/\.?0+$/, '');
+                }
+            });
+        }
+
+        function convertTemperatureAll(fromUnit, value) {
+            if (isNaN(value) || value === '') {
+                // Clear all temperature fields
+                ['celsius', 'fahrenheit', 'kelvin'].forEach(unit => {
+                    if (unit !== fromUnit) {
+                        document.getElementById(unit).value = '';
+                    }
+                });
+                return;
+            }
+
+            ['celsius', 'fahrenheit', 'kelvin'].forEach(unit => {
+                if (unit !== fromUnit) {
+                    const convertedValue = convertTemperature(value, fromUnit, unit);
+                    document.getElementById(unit).value = convertedValue.toFixed(6).replace(/\.?0+$/, '');
+                }
+            });
+        }
+
+        function clearSection(category) {
+            let fields = [];
+            
+            switch (category) {
+                case 'length':
+                    fields = ['meters', 'feet', 'inches', 'centimeters', 'kilometers', 'miles'];
+                    break;
+                case 'weight':
+                    fields = ['kilograms', 'pounds', 'ounces', 'grams'];
+                    break;
+                case 'volume':
+                    fields = ['liters', 'gallons', 'milliliters', 'fluidounces'];
+                    break;
+                case 'temperature':
+                    fields = ['celsius', 'fahrenheit', 'kelvin'];
+                    break;
+                case 'speed':
+                    fields = ['kmh', 'mph', 'ms'];
+                    break;
+                case 'area':
+                    fields = ['squaremeters', 'squarefeet', 'hectares', 'acres'];
+                    break;
+            }
+            
+            fields.forEach(field => {
+                document.getElementById(field).value = '';
+            });
+        }
+
+        function clearAll() {
+            ['length', 'weight', 'volume', 'temperature', 'speed', 'area'].forEach(category => {
+                clearSection(category);
+            });
+        }
+
+        function copyToClipboard(fieldId) {
+            const field = document.getElementById(fieldId);
+            if (field.value) {
+                navigator.clipboard.writeText(field.value).then(function() {
+                    // Show temporary feedback
+                    const button = field.nextElementSibling;
+                    const originalIcon = button.innerHTML;
+                    button.innerHTML = '<i class="bi bi-check text-success"></i>';
+                    setTimeout(() => {
+                        button.innerHTML = originalIcon;
+                    }, 1000);
+                }).catch(function() {
+                    // Fallback for older browsers
+                    field.select();
+                    document.execCommand('copy');
+                });
+            }
+        }
+
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Length conversions
+            ['meters', 'feet', 'inches', 'centimeters', 'kilometers', 'miles'].forEach(unit => {
+                document.getElementById(unit).addEventListener('input', function() {
+                    convert('length', unit, this.value);
+                });
+            });
+
+            // Weight conversions
+            ['kilograms', 'pounds', 'ounces', 'grams'].forEach(unit => {
+                document.getElementById(unit).addEventListener('input', function() {
+                    convert('weight', unit, this.value);
+                });
+            });
+
+            // Volume conversions
+            ['liters', 'gallons', 'milliliters', 'fluidounces'].forEach(unit => {
+                document.getElementById(unit).addEventListener('input', function() {
+                    convert('volume', unit, this.value);
+                });
+            });
+
+            // Temperature conversions (special handling)
+            ['celsius', 'fahrenheit', 'kelvin'].forEach(unit => {
+                document.getElementById(unit).addEventListener('input', function() {
+                    convertTemperatureAll(unit, this.value);
+                });
+            });
+
+            // Speed conversions
+            ['kmh', 'mph', 'ms'].forEach(unit => {
+                document.getElementById(unit).addEventListener('input', function() {
+                    convert('speed', unit, this.value);
+                });
+            });
+
+            // Area conversions
+            ['squaremeters', 'squarefeet', 'hectares', 'acres'].forEach(unit => {
+                document.getElementById(unit).addEventListener('input', function() {
+                    convert('area', unit, this.value);
+                });
+            });
+        });
+    </script>
+}
+
+<style>
+    .card {
+        border-radius: 1rem !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .form-control {
+        border-radius: 0.5rem;
+    }
+    
+    .btn {
+        border-radius: 0.5rem;
+    }
+    
+    .input-group .btn {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    
+    .card-header {
+        border-radius: 1rem 1rem 0 0 !important;
+    }
+</style>
