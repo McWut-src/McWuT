@@ -7,10 +7,22 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script>
+        // Initialize Bootstrap color mode as early as possible to avoid FOUC
+        (function initializeTheme() {
+            try {
+                const stored = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = stored ? stored : (prefersDark ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-bs-theme', theme);
+            } catch { /* no-op */ }
+        })();
+    </script>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+        <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
             <div class="container">
                 <a class="navbar-brand fw-bold text-primary" asp-area="" asp-page="/Index">McWuT</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +52,13 @@
                             <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
                     </ul>
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav align-items-center">
+                        <li class="nav-item me-2">
+                            <button id="themeToggle" type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+                                <i id="themeIcon" class="bi me-1"></i>
+                                <span id="themeLabel" class="d-none d-sm-inline"></span>
+                            </button>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-person-circle"></i>
@@ -82,6 +100,43 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        (function themeToggleSetup() {
+            const btn = document.getElementById('themeToggle');
+            const icon = document.getElementById('themeIcon');
+            const label = document.getElementById('themeLabel');
+
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                try { localStorage.setItem('theme', theme); } catch { /* no-op */ }
+                if (theme === 'dark') {
+                    icon.classList.remove('bi-sun');
+                    icon.classList.add('bi-moon-stars');
+                    label.textContent = 'Dark';
+                } else {
+                    icon.classList.remove('bi-moon-stars');
+                    icon.classList.add('bi-sun');
+                    label.textContent = 'Light';
+                }
+            }
+
+            function getCurrentTheme() {
+                return document.documentElement.getAttribute('data-bs-theme') || 'light';
+            }
+
+            if (btn && icon && label) {
+                // Initialize icon/label to current theme
+                applyTheme(getCurrentTheme());
+
+                btn.addEventListener('click', function () {
+                    const next = getCurrentTheme() === 'dark' ? 'light' : 'dark';
+                    applyTheme(next);
+                });
+            }
+        })();
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
